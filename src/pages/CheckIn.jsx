@@ -9,10 +9,55 @@ const currentYear = new Date().getFullYear();
 const ANIOS = Array.from({ length: currentYear - 1990 + 1 }, (_, i) => currentYear - i);
 
 const CATEGORIAS_TRABAJO = {
-  'Mantenimiento General': ['Cambio de Aceite y Filtros', 'Cambio de Radiador', 'Revisión General', 'Batería'],
-  'Tren Delantero y Suspensión': ['Alineación y Balanceo', 'Amortiguadores', 'Bujes y Extremos', 'Cremallera'],
-  'Frenos': ['Cambio de Pastillas', 'Rectificado de Discos', 'Cintas y Campanas', 'Líquido de Frenos'],
-  'Motor': ['Correa de Distribución', 'Bomba de Agua', 'Junta de Tapa', 'Bujías'],
+  'Diagnóstico y Electrónica': [
+    'Escaneo Computarizado (OBD2)', 
+    'Reseteo de Testigos / ECU', 
+    'Revisión de Batería y Carga', 
+    'Reparación de Alternador/Arranque', 
+    'Cambio de Sensores (ABS, Oxígeno)'
+  ],
+  'Climatización y Refrigeración': [
+    'Carga de Gas Aire Acondicionado', 
+    'Detección de Pérdidas de AC', 
+    'Reparación de Compresor AC', 
+    'Cambio de Radiador / Electroventilador', 
+    'Limpieza de Circuito de Agua'
+  ],
+  'Mantenimiento General': [
+    'Cambio de Aceite y Filtros', 
+    'Cambio de Fluidos (Caja, Dirección)', 
+    'Cambio Filtro de Habitáculo', 
+    'Revisión General de 20 Puntos',
+    'Lubricación General'
+  ],
+  'Motor y Transmisión': [
+    'Kit de Distribución (Correa/Cadena)', 
+    'Bomba de Agua y Termostato', 
+    'Cambio de Bujías y Bobinas', 
+    'Limpieza de Inyectores', 
+    'Kit de Embrague Completo', 
+    'Junta de Tapa de Cilindros'
+  ],
+  'Tren Delantero y Dirección': [
+    'Alineación y Balanceo', 
+    'Amortiguadores y Espirales', 
+    'Bujes, Rótulas y Extremos', 
+    'Cremallera de Dirección', 
+    'Semiejes y Homocinéticas'
+  ],
+  'Frenos': [
+    'Cambio de Pastillas y Discos', 
+    'Rectificado de Discos', 
+    'Cintas y Campanas', 
+    'Purga y Líquido de Frenos', 
+    'Reparación de Calipers'
+  ],
+  'Otros Trabajos': [
+    'Rotación de Neumáticos', 
+    'Reparación de Escape', 
+    'Cambio de Ópticas / Lámparas', 
+    'Trabajo de Tornería / Soldadura'
+  ]
 };
 
 export default function CheckIn() {
@@ -20,7 +65,7 @@ export default function CheckIn() {
     patente: '',
     marca: '',
     modelo: '',
-    anio: '', // Agregamos el campo año
+    anio: '', 
   });
 
   const [serviciosSeleccionados, setServiciosSeleccionados] = useState([]);
