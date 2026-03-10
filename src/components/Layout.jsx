@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { ClipboardList, Wrench, History, LayoutDashboard } from 'lucide-react';
+import { ClipboardList, Wrench, History, LayoutDashboard, Package  } from 'lucide-react';
 import logoImg from '../assets/logo.png';
+
 
 export default function Layout() {
   const location = useLocation();
@@ -9,6 +10,7 @@ export default function Layout() {
     { name: 'Ingreso Vehículo', path: '/', icon: <ClipboardList size={20} /> },
     { name: 'Gestión de OT', path: '/gestion', icon: <Wrench size={20} /> },
     { name: 'Historial', path: '/historial', icon: <History size={20} /> },
+    { name: 'Inventario', path: '/inventario', icon: <Package size={20} /> },
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
   ];
 

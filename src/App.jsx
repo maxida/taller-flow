@@ -4,6 +4,7 @@ import CheckIn from './pages/CheckIn';
 import GestionOT from './pages/GestionOT';
 import Historial from './pages/Historial';
 import Dashboard from './pages/Dashboard';
+import Inventario from './pages/Inventario'; // <-- 1. Importá esto
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="gestion" element={<GestionOT />} />
           <Route path="historial" element={<Historial />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="inventario" element={<Inventario />} /> {/* <-- 2. Agregá esta línea */}
         </Route>
       </Routes>
     </BrowserRouter>
