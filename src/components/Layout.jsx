@@ -47,6 +47,12 @@ export default function Layout() {
             );
           })}
         </nav>
+        {/* Footer sutil */}
+        <div className="px-4 py-4">
+          <div className="text-center">
+            <span className="text-white/70 italic text-xs font-medium">Developed by <span className="font-semibold">Ing. Quinteros</span> v1.0</span>
+          </div>
+        </div>
       </aside>
 
       {/* Contenido Principal (Acá se renderiza la página activa) */}
