@@ -11,7 +11,7 @@ const CATEGORIAS_TRABAJO = {
   'Diagnóstico y Electrónica': ['Escaneo Computarizado (OBD2)', 'Reseteo de Testigos / ECU', 'Revisión de Batería y Carga', 'Reparación de Alternador/Arranque', 'Cambio de Sensores (ABS, Oxígeno)'],
   'Climatización y Refrigeración': ['Carga de Gas Aire Acondicionado', 'Detección de Pérdidas de AC', 'Reparación de Compresor AC', 'Cambio de Radiador / Electroventilador', 'Limpieza de Circuito de Agua'],
   'Mantenimiento General': ['Cambio de Aceite y Filtros', 'Cambio de Fluidos (Caja, Dirección)', 'Cambio Filtro de Habitáculo', 'Revisión General de 20 Puntos', 'Lubricación General'],
-  'Motor y Transmisión': ['Kit de Distribución (Correa/Cadena)', 'Bomba de Agua y Termostato', 'Cambio de Bujías y Bobinas', 'Limpieza de Inyectores', 'Kit de Embrague Completo', 'Junta de Tapa de Cilindros'],
+  'Motor y Transmisión': ['Kit de Distribución (Correa/Cadena)', 'Bomba de Agua y Termostato', 'Cambio de Bujías y Bobinas', 'Limpieza de Inyectores', 'Kit de Embrague Completo', 'Junta de Tapa de Cilindros','Servicio de Inyección Electrónica'],
   'Tren Delantero y Dirección': ['Alineación y Balanceo', 'Amortiguadores y Espirales', 'Bujes, Rótulas y Extremos', 'Cremallera de Dirección', 'Semiejes y Homocinéticas'],
   'Frenos': ['Cambio de Pastillas y Discos', 'Rectificado de Discos', 'Cintas y Campanas', 'Purga y Líquido de Frenos', 'Reparación de Calipers'],
   'Otros Trabajos': ['Rotación de Neumáticos', 'Reparación de Escape', 'Cambio de Ópticas / Lámparas', 'Trabajo de Tornería / Soldadura']

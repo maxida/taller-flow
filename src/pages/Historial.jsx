@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock } from 'lucide-react';
+import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock, Package } from 'lucide-react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase/config'; 
 
@@ -11,12 +11,12 @@ export default function Historial() {
   const [filtroPatente, setFiltroPatente] = useState('');
   const [filtroOT, setFiltroOT] = useState('');
   const [filtroFecha, setFiltroFecha] = useState('');
-  const [filtroFechaCierre, setFiltroFechaCierre] = useState(''); // <-- Nuevo filtro
+  const [filtroFechaCierre, setFiltroFechaCierre] = useState(''); 
   const [filtroEstado, setFiltroEstado] = useState('Todas'); 
 
   const [otSeleccionada, setOtSeleccionada] = useState(null);
 
-  // Función infalible para formatear fechas (YYYY-MM-DD a DD/MM/YYYY) sin usar el objeto Date
+  // Función infalible para formatear fechas
   const formatearFecha = (fechaISO) => {
     if (!fechaISO) return '';
     const partes = fechaISO.split('-');
@@ -50,7 +50,7 @@ export default function Historial() {
     const coincidePatente = ot.patente?.toLowerCase().includes(filtroPatente.toLowerCase());
     const coincideOT = ot.id_ot?.toLowerCase().includes(filtroOT.toLowerCase());
     const coincideFecha = filtroFecha ? ot.fecha === filtroFecha : true;
-    const coincideFechaCierre = filtroFechaCierre ? ot.fechaCierre === filtroFechaCierre : true; // <-- Lógica del nuevo filtro
+    const coincideFechaCierre = filtroFechaCierre ? ot.fechaCierre === filtroFechaCierre : true; 
     const coincideEstado = filtroEstado === 'Todas' ? true : ot.estado === filtroEstado;
     
     return coincidePatente && coincideOT && coincideFecha && coincideFechaCierre && coincideEstado;
@@ -66,7 +66,7 @@ export default function Historial() {
         <p className="mt-2 text-slate-500">Buscá y consultá el registro histórico de todos los trabajos realizados.</p>
       </div>
 
-      {/* BARRA DE FILTROS (Ahora con 5 columnas adaptables) */}
+      {/* BARRA DE FILTROS */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Patente</label>
@@ -92,7 +92,6 @@ export default function Historial() {
           </div>
         </div>
 
-        {/* NUEVO FILTRO DE FECHA DE CIERRE */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">F. Cierre</label>
           <div className="relative">
@@ -137,7 +136,6 @@ export default function Historial() {
                 <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${ot.estado === 'Abierta' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>{ot.estado}</span>
               </div>
               
-              {/* TARJETA: ÁREA DE FECHAS (INGRESO Y CIERRE) */}
               <div className="flex flex-col gap-2 bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
                 <div className="flex items-center gap-2 text-slate-600 text-xs">
                   <Calendar size={14} className="text-blue-500" />
@@ -205,6 +203,25 @@ export default function Historial() {
                   ))}
                 </ul>
               </div>
+
+              {/* NUEVA SECCIÓN: REPUESTOS UTILIZADOS EN EL HISTORIAL */}
+              {otSeleccionada.repuestosUtilizados && otSeleccionada.repuestosUtilizados.length > 0 && (
+                <div>
+                  <h4 className="font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <Package size={18} className="text-blue-500" /> Repuestos Utilizados
+                  </h4>
+                  <ul className="space-y-2">
+                    {otSeleccionada.repuestosUtilizados.map((rep, idx) => (
+                      <li key={idx} className="flex items-center gap-3 text-slate-600 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                        <span className="bg-blue-100 text-blue-700 font-bold px-2.5 py-1 rounded text-xs flex-shrink-0">
+                          {rep.cantidad}x
+                        </span>
+                        <span className="font-medium text-slate-700">{rep.nombre}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {otSeleccionada.estado === 'Cerrada' && (
                 <>
