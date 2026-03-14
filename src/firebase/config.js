@@ -1,6 +1,8 @@
 // src/firebase/config.js
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+
 
 // ¡REEMPLAZÁ ESTE OBJETO CON EL QUE TE DIO FIREBASE!
 const firebaseConfig = {
@@ -17,3 +19,4 @@ const app = initializeApp(firebaseConfig);
 
 // 2. Inicializamos Firestore y lo exportamos para usarlo en otras pantallas
 export const db = getFirestore(app);
+export const storage = getStorage(app);

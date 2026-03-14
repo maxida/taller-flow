@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react';
-import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock, Package } from 'lucide-react';
+import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock, Package, Camera } from 'lucide-react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase/config'; 
+
+// Diccionario para traducir la clave de la base de datos a un nombre lindo para el usuario
+const ZONAS_FOTOS_LABELS = {
+  tablero: 'Tablero / Km',
+  frente: 'Frente',
+  trasera: 'Parte Trasera',
+  izquierdo: 'Lat. Izquierdo',
+  derecho: 'Lat. Derecho'
+};
 
 export default function Historial() {
   const [ots, setOts] = useState([]); 
@@ -195,6 +204,39 @@ export default function Historial() {
                 </div>
               </div>
 
+              {/* NUEVA SECCIÓN: ESTADO VISUAL (FOTOS) */}
+              {otSeleccionada.fotos && Object.keys(otSeleccionada.fotos).length > 0 && (
+                <div className="bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+                  <h4 className="font-semibold text-slate-700 mb-3 text-sm uppercase tracking-wider flex items-center gap-2">
+                    <Camera size={18} className="text-blue-500" />
+                    Estado Visual al Ingreso
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {Object.entries(otSeleccionada.fotos).map(([zona, url]) => (
+                      <a 
+                        key={zona} 
+                        href={url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="group relative rounded-lg overflow-hidden border border-slate-200 h-24 bg-white block hover:ring-2 hover:ring-blue-500 transition-all shadow-sm"
+                        title="Haz clic para ampliar"
+                      >
+                        <img 
+                          src={url} 
+                          alt={zona} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
+                        />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/90 to-transparent pt-6 pb-1.5 px-1">
+                          <p className="text-white text-[10px] font-bold uppercase tracking-wider text-center truncate shadow-sm">
+                             {ZONAS_FOTOS_LABELS[zona] || zona}
+                          </p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <h4 className="font-bold text-slate-700 mb-3 flex items-center gap-2"><Wrench size={18} className="text-blue-500" /> Trabajos Solicitados</h4>
                 <ul className="space-y-2">
@@ -204,7 +246,7 @@ export default function Historial() {
                 </ul>
               </div>
 
-              {/* NUEVA SECCIÓN: REPUESTOS UTILIZADOS EN EL HISTORIAL */}
+              {/* SECCIÓN: REPUESTOS UTILIZADOS EN EL HISTORIAL */}
               {otSeleccionada.repuestosUtilizados && otSeleccionada.repuestosUtilizados.length > 0 && (
                 <div>
                   <h4 className="font-bold text-slate-700 mb-3 flex items-center gap-2">

@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Search, Wrench, FileText, AlertTriangle, CheckCircle, Clock, ChevronRight, Loader2, Package, Plus, Minus, Trash2 } from 'lucide-react';
+import { Search, Wrench, FileText, AlertTriangle, CheckCircle, Clock, ChevronRight, Loader2, Package, Plus, Minus, Trash2, Camera } from 'lucide-react';
 import { collection, query, where, getDocs, doc, updateDoc, increment, orderBy } from 'firebase/firestore';
 import { db } from '../firebase/config';
+
+// Diccionario para traducir la clave de la base de datos a un nombre lindo para el usuario
+const ZONAS_FOTOS_LABELS = {
+  tablero: 'Tablero / Km',
+  frente: 'Frente',
+  trasera: 'Parte Trasera',
+  izquierdo: 'Lat. Izquierdo',
+  derecho: 'Lat. Derecho'
+};
 
 export default function GestionOT() {
   // --- ESTADOS ORIGINALES DE OT ---
@@ -143,12 +152,10 @@ export default function GestionOT() {
       alert(`¡La ${otSeleccionada.id_ot} fue cerrada con éxito y el inventario se actualizó!`);
       
       // 3. ACTUALIZAR UI LOCAL
-      // Quitamos la OT de la lista
       const nuevasAbiertas = otsAbiertas.filter(ot => ot.firebaseId !== otSeleccionada.firebaseId);
       setOtsAbiertas(nuevasAbiertas);
       setResultados(searchTerm ? nuevasAbiertas.filter(ot => ot.patente.includes(searchTerm) || ot.id_ot.includes(searchTerm)) : nuevasAbiertas);
       
-      // Actualizamos el stock en nuestro estado local del inventario para no tener que recargar la página
       setInventario(prev => prev.map(item => {
         const usado = repuestosSeleccionados.find(r => r.id === item.id);
         if (usado) {
@@ -233,6 +240,39 @@ export default function GestionOT() {
                 </div>
               </div>
 
+              {/* NUEVA SECCIÓN: ESTADO VISUAL (FOTOS) */}
+              {otSeleccionada.fotos && Object.keys(otSeleccionada.fotos).length > 0 && (
+                <div className="mb-8 bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+                  <h4 className="font-semibold text-slate-700 mb-3 text-sm uppercase tracking-wider flex items-center gap-2">
+                    <Camera size={18} className="text-blue-500" />
+                    Estado Visual al Ingreso
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {Object.entries(otSeleccionada.fotos).map(([zona, url]) => (
+                      <a 
+                        key={zona} 
+                        href={url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="group relative rounded-lg overflow-hidden border border-slate-200 h-24 bg-white block hover:ring-2 hover:ring-blue-500 transition-all shadow-sm"
+                        title="Haz clic para ampliar"
+                      >
+                        <img 
+                          src={url} 
+                          alt={zona} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
+                        />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/90 to-transparent pt-6 pb-1.5 px-1">
+                          <p className="text-white text-[10px] font-bold uppercase tracking-wider text-center truncate shadow-sm">
+                             {ZONAS_FOTOS_LABELS[zona] || zona}
+                          </p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Trabajos del Check-In */}
               <div className="mb-8">
                 <h4 className="font-semibold text-slate-700 mb-3 text-sm uppercase tracking-wider">Trabajos Solicitados (Check-in)</h4>
@@ -247,7 +287,7 @@ export default function GestionOT() {
 
               <form onSubmit={handleFinalizar} className="space-y-8">
                 
-                {/* NUEVO: SECCIÓN DE REPUESTOS */}
+                {/* SECCIÓN DE REPUESTOS */}
                 <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
                   <h4 className="flex items-center gap-2 font-bold text-slate-800 mb-4">
                     <Package className="text-blue-600" size={20} /> Repuestos Utilizados (Descuenta Stock)
