@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock, Package, Camera, Printer } from 'lucide-react';
+import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock, Package, Camera, Printer, Share2, MessageCircle, Mail } from 'lucide-react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase/config'; 
-import logoImg from '../assets/logo.png'; // Asegurate de tener el logo importado igual que en el Presupuesto
+import logoImg from '../assets/logo.png'; 
 
 const ZONAS_FOTOS_LABELS = {
   tablero: 'Tablero / Km',
@@ -23,6 +23,9 @@ export default function Historial() {
   const [filtroEstado, setFiltroEstado] = useState('Todas'); 
 
   const [otSeleccionada, setOtSeleccionada] = useState(null);
+  
+  // Estado para manejar la ventanita de Compartir
+  const [shareModal, setShareModal] = useState({ isOpen: false, method: 'whatsapp', contact: '+549' });
 
   const formatearFecha = (fechaISO) => {
     if (!fechaISO) return '';
@@ -65,6 +68,33 @@ export default function Historial() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const ejecutarCompartir = () => {
+    const { method, contact } = shareModal;
+    if (!contact.trim()) {
+      alert(`Por favor ingresá un ${method === 'whatsapp' ? 'teléfono' : 'correo'}.`);
+      return;
+    }
+
+    // Armamos la lista de repuestos limpia
+    const totalRepuestos = otSeleccionada.repuestosUtilizados?.length 
+      ? otSeleccionada.repuestosUtilizados.map(r => `${r.cantidad}x ${r.nombre}`).join(', ')
+      : 'Ninguno registrado';
+
+    // Armamos el texto súper profesional que se enviará
+    const texto = `Hola, te envío el reporte de servicio técnico de *JOTA M.* para tu vehículo *${otSeleccionada.marca} ${otSeleccionada.modelo} (${otSeleccionada.patente})*.\n\n*Fecha de Ingreso:* ${formatearFecha(otSeleccionada.fecha)}\n*Estado:* ${otSeleccionada.estado}\n\n*Trabajos Solicitados:*\n- ${otSeleccionada.servicios?.join('\n- ')}\n\n*Repuestos Utilizados:*\n${totalRepuestos}\n\n${otSeleccionada.estado === 'Cerrada' ? `*Diagnóstico / Recomendaciones:*\n${otSeleccionada.diagnostico || 'Sin observaciones'}\n\n` : ''}¡Gracias por elegirnos!\nQuedamos a tu disposición.`;
+
+    if (method === 'whatsapp') {
+      const url = `https://wa.me/${contact.replace(/\D/g, '')}?text=${encodeURIComponent(texto)}`;
+      window.open(url, '_blank');
+    } else {
+      const subject = `Reporte de Servicio JOTA M. - ${otSeleccionada.patente}`;
+      const url = `mailto:${contact}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(texto)}`;
+      window.location.href = url;
+    }
+
+    setShareModal({ ...shareModal, isOpen: false });
   };
 
   return (
@@ -174,17 +204,64 @@ export default function Historial() {
       {/* MODAL DE DETALLE DE OT (Se oculta en impresión) */}
       {otSeleccionada && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative overflow-hidden">
+            
+            {/* SUB-MODAL DE COMPARTIR */}
+            {shareModal.isOpen && (
+              <div className="absolute inset-0 z-50 bg-white/95 backdrop-blur-sm flex items-center justify-center p-6">
+                <div className="bg-white rounded-xl shadow-2xl border border-slate-200 p-6 w-full max-w-sm animate-in zoom-in-95">
+                  <div className="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
+                    <h4 className="text-lg font-bold text-slate-800">Compartir Reporte</h4>
+                    <button onClick={() => setShareModal({ ...shareModal, isOpen: false })} className="text-slate-400 hover:text-slate-600"><X size={20}/></button>
+                  </div>
+                  
+                  <div className="flex gap-2 mb-5">
+                    <button onClick={() => setShareModal({...shareModal, method: 'whatsapp'})} className={`flex-1 py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-colors ${shareModal.method === 'whatsapp' ? 'bg-[#25D366] text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                      <MessageCircle size={18} /> WhatsApp
+                    </button>
+                    <button onClick={() => setShareModal({...shareModal, method: 'email'})} className={`flex-1 py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-colors ${shareModal.method === 'email' ? 'bg-blue-500 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                      <Mail size={18} /> Email
+                    </button>
+                  </div>
+
+                  <div className="mb-6">
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                      {shareModal.method === 'whatsapp' ? 'Número de WhatsApp (Ej: 3811234567)' : 'Correo Electrónico del Cliente'}
+                    </label>
+                    <input 
+                      type={shareModal.method === 'whatsapp' ? 'tel' : 'email'} 
+                      placeholder={shareModal.method === 'whatsapp' ? 'Ej: 381 1234567' : 'cliente@email.com'}
+                      value={shareModal.contact}
+                      onChange={(e) => setShareModal({...shareModal, contact: e.target.value})}
+                      className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none bg-slate-50"
+                      autoFocus
+                    />
+                    <p className="text-[11px] text-slate-500 mt-3 bg-slate-50 p-2.5 rounded border border-slate-200 leading-tight">
+                      <strong className="text-slate-700">Importante:</strong> Se enviará un resumen detallado por texto. Para enviar el documento PDF original con fotos, descargalo primero con el botón "Exportar PDF" y adjuntalo en el chat.
+                    </p>
+                  </div>
+
+                  <button onClick={ejecutarCompartir} className="w-full bg-slate-800 text-white font-bold py-3 rounded-lg hover:bg-slate-900 transition-colors shadow-sm flex justify-center items-center gap-2">
+                    <Share2 size={18} /> Enviar Ahora
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Cabecera Principal del Modal */}
             <div className="flex justify-between items-center p-6 border-b border-slate-100">
               <div>
                 <h3 className="text-2xl font-bold text-slate-800">Detalle de {otSeleccionada.id_ot}</h3>
                 <p className="text-slate-500 font-medium">{otSeleccionada.patente} • {otSeleccionada.marca} {otSeleccionada.modelo} ({otSeleccionada.anio})</p>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={handlePrint} className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-100 transition-colors">
+                <button onClick={() => setShareModal({ isOpen: true, method: 'whatsapp', contact: '+549' })} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm">
+                  <Share2 size={18} /> Compartir
+                </button>
+                <button onClick={handlePrint} className="flex items-center gap-2 bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition-colors">
                   <Printer size={18} /> Exportar PDF
                 </button>
-                <button onClick={() => setOtSeleccionada(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={24} className="text-slate-500" /></button>
+                <button onClick={() => setOtSeleccionada(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors ml-1"><X size={24} className="text-slate-500" /></button>
               </div>
             </div>
 
