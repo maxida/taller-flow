@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { ClipboardList, Wrench, History, LayoutDashboard, Package  } from 'lucide-react';
+import { ClipboardList, Wrench, History, LayoutDashboard, Package, Calculator } from 'lucide-react';
 import logoImg from '../assets/logo.png';
 
 
@@ -11,6 +11,7 @@ export default function Layout() {
     { name: 'Gestión de OT', path: '/gestion', icon: <Wrench size={20} /> },
     { name: 'Historial', path: '/historial', icon: <History size={20} /> },
     { name: 'Inventario', path: '/inventario', icon: <Package size={20} /> },
+    { name: 'Presupuesto', path: '/presupuesto', icon: <Calculator size={20} /> },
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
   ];
 
@@ -50,7 +51,7 @@ export default function Layout() {
         {/* Footer sutil */}
         <div className="px-4 py-4">
           <div className="text-center">
-            <span className="text-white/70 italic text-xs font-medium">Developed by <span className="font-semibold">Ing. Quinteros</span> v1.0</span>
+            <span className="text-white/70 italic text-xs font-medium">Developed by <span className="font-semibold">Ing. Quinteros</span> v2.0</span>
           </div>
         </div>
       </aside>

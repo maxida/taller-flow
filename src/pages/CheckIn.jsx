@@ -1,21 +1,86 @@
 import { useState } from 'react';
 import { CarFront, Wrench, Check, CalendarPlus, Loader2, Camera, X, ImagePlus } from 'lucide-react';
 import { collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // <-- Importamos Storage
-import { db, storage } from '../firebase/config'; // <-- Traemos Storage de nuestra config
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; 
+import { db, storage } from '../firebase/config'; 
 
 const MARCAS = ['Volkswagen', 'Ford', 'Chevrolet', 'Toyota', 'Fiat', 'Peugeot', 'Renault', 'Honda', 'Hyundai', 'Nissan', 'Citroën', 'Mitsubishi', 'Subaru', 'Suzuki', 'Kia', 'Mazda', 'Dodge', 'Jeep', 'Ram', 'GMC'];
 const currentYear = new Date().getFullYear();
 const ANIOS = Array.from({ length: currentYear - 1990 + 1 }, (_, i) => currentYear - i);
 
+// v2.0: Categorías expandidas y desglosadas a pedido del cliente
 const CATEGORIAS_TRABAJO = {
-  'Diagnóstico y Electrónica': ['Diagnóstico Computarizado (Escaneo)', 'Reseteo de Testigos / ECU', 'Revisión de Batería y Carga', 'Reparación de Arranque / Alternador', 'Cambio de Sensores (ABS, Oxígeno)'],
-  'Climatización y Refrigeración': ['Sistema de Aire Acondicionado (Carga/Fugas)', 'Reparación de Compresor AC', 'Cambio de Radiador / Electroventilador', 'Limpieza de Circuito de Agua'],
-  'Mantenimiento General': ['Cambio de Aceite y Filtros', 'Cambio de Fluidos (Caja, Dirección)', 'Cambio Filtro de Habitáculo', 'Revisión General de 20 Puntos', 'Lubricación General'],
-  'Motor y Transmisión': ['Kit de Distribución (Correa/Cadena)', 'Bomba de Agua y Termostato', 'Cambio de Bujías y Bobinas', 'Servicio de Inyección Electrónica', 'Cambio de Kit de Embrague', 'Junta de Tapa de Cilindros'],
-  'Tren Delantero y Dirección': ['Alineación y Balanceo', 'Amortiguadores y Espirales', 'Bujes, Rótulas y Extremos', 'Cremallera de Dirección', 'Semiejes y Homocinéticas'],
-  'Frenos': ['Cambio de Pastillas y Discos', 'Rectificado de Discos', 'Cintas y Campanas', 'Purga y Líquido de Frenos', 'Reparación de Calipers'],
-  'Otros Trabajos': ['Rotación de Neumáticos', 'Reparación de Escape', 'Cambio de Ópticas / Lámparas', 'Trabajo de Tornería / Soldadura']
+  'Diagnóstico y Electrónica': [
+    'Diagnóstico Computarizado (Escaneo)', 
+    'Reseteo de Testigos / ECU', 
+    'Revisión de Batería y Carga', 
+    'Reparación de Arranque',
+    'Reparación de Alternador',
+    'Cambio Rodamiento Polea Alternador',
+    'Cambio de Sensores (ABS, Oxígeno)'
+  ],
+  'Climatización y Refrigeración': [
+    'Sistema de Aire Acondicionado (Carga/Fugas)', 
+    'Reparación de Compresor AC', 
+    'Cambio Rodamiento Polea A/C',
+    'Cambio de Radiador',
+    'Cambio de Electroventilador',
+    'Limpieza de Circuito de Agua'
+  ],
+  'Mantenimiento General': [
+    'Cambio de Aceite y Filtros', 
+    'Cambio de Fluidos (Caja, Dirección)', 
+    'Cambio Filtro de Habitáculo', 
+    'Revisión General de 20 Puntos', 
+    'Lubricación General'
+  ],
+  'Motor y Transmisión': [
+    'Kit de Distribución (Correa/Cadena)', 
+    'Cambio Correa Alternador / Poly-V',
+    'Cambio Bomba de Agua',
+    'Cambio de Termostato',
+    'Cambio de Manguera (Pérdida de Agua)',
+    'Reparación de Pérdida de Aceite',
+    'Cambio de Bujías',
+    'Cambio de Bobinas',
+    'Servicio de Inyección Electrónica', 
+    'Cambio de Kit de Embrague', 
+    'Junta de Tapa de Cilindros',
+    'Cambio de Patas de Motor',
+    'Cambio de Patas de Caja',
+    'Cambio de Cuna de Motor'
+  ],
+  'Tren Delantero y Dirección': [
+    'Alineación y Balanceo', 
+    'Cambio de Amortiguadores',
+    'Cambio de Espirales',
+    'Cambio de Cazoleta / Crapodina',
+    'Cambio de Bujes',
+    'Cambio de Rótulas',
+    'Cambio de Extremos',
+    'Cambio de Bieletas',
+    'Cambio Rodamiento de Rueda',
+    'Cambio Rodamiento Polea Dirección',
+    'Cremallera de Dirección', 
+    'Semiejes y Homocinéticas'
+  ],
+  'Frenos': [
+    'Cambio de Pastillas',
+    'Cambio de Discos',
+    'Rectificado de Discos', 
+    'Cambio de Cintas',
+    'Rectificado/Cambio de Campanas',
+    'Cambio de Cables de Freno',
+    'Regulación de Frenos',
+    'Purga y Líquido de Frenos', 
+    'Reparación de Calipers'
+  ],
+  'Otros Trabajos': [
+    'Rotación de Neumáticos', 
+    'Reparación de Escape', 
+    'Cambio de Ópticas / Lámparas', 
+    'Trabajo de Tornería / Soldadura'
+  ]
 };
 
 const ZONAS_FOTOS = [
@@ -30,12 +95,11 @@ export default function CheckIn() {
   const [formData, setFormData] = useState({ patente: '', marca: '', modelo: '', anio: '' });
   const [serviciosSeleccionados, setServiciosSeleccionados] = useState([]);
   
-  // Estados para las fotos
   const [fotosFiles, setFotosFiles] = useState({});
   const [fotosPreviews, setFotosPreviews] = useState({});
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [estadoCarga, setEstadoCarga] = useState(''); // Para avisar que estamos subiendo imágenes
+  const [estadoCarga, setEstadoCarga] = useState(''); 
 
   const handleInputChange = (e) => {
     const value = e.target.name === 'patente' ? e.target.value.toUpperCase() : e.target.value;
@@ -50,18 +114,14 @@ export default function CheckIn() {
     }
   };
 
-  // Manejador de selección de imágenes
   const handleFotoChange = (e, zonaId) => {
     const file = e.target.files[0];
     if (file) {
-      // Guardamos el archivo original para subirlo luego
       setFotosFiles(prev => ({ ...prev, [zonaId]: file }));
-      // Generamos una URL temporal para mostrar la miniatura en pantalla
       setFotosPreviews(prev => ({ ...prev, [zonaId]: URL.createObjectURL(file) }));
     }
   };
 
-  // Manejador para borrar una imagen seleccionada
   const eliminarFoto = (zonaId) => {
     setFotosFiles(prev => { const nuevo = {...prev}; delete nuevo[zonaId]; return nuevo; });
     setFotosPreviews(prev => { const nuevo = {...prev}; delete nuevo[zonaId]; return nuevo; });
@@ -88,17 +148,13 @@ export default function CheckIn() {
       const fechaIngreso = `${year}-${month}-${day}`; 
       const horaIngreso = ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 
-      // LÓGICA DE SUBIDA DE FOTOS
       setEstadoCarga('Subiendo imágenes al servidor...');
       const urlsFotos = {};
       
       for (const zona of ZONAS_FOTOS) {
         if (fotosFiles[zona.id]) {
-          // Creamos la referencia en Firebase Storage (ej: ordenes/OT-0005/frente)
           const fotoRef = ref(storage, `ordenes/${idFormat}/${zona.id}`);
-          // Subimos el archivo
           await uploadBytes(fotoRef, fotosFiles[zona.id]);
-          // Obtenemos la URL pública de la imagen
           const url = await getDownloadURL(fotoRef);
           urlsFotos[zona.id] = url;
         }
@@ -113,7 +169,7 @@ export default function CheckIn() {
         modelo: formData.modelo,
         anio: formData.anio,
         servicios: serviciosSeleccionados,
-        fotos: urlsFotos, // <-- Guardamos las URLs de las fotos aquí
+        fotos: urlsFotos, 
         fecha: fechaIngreso,
         horaIngreso: horaIngreso, 
         estado: 'Abierta',
@@ -125,7 +181,6 @@ export default function CheckIn() {
       await addDoc(collection(db, "ordenes"), nuevaOrden);
       alert(`¡Éxito! Se generó la ${idFormat} a las ${horaIngreso} hs.`);
       
-      // Limpiamos todo
       setFormData({ patente: '', marca: '', modelo: '', anio: '' });
       setServiciosSeleccionados([]);
       setFotosFiles({});
@@ -159,7 +214,6 @@ export default function CheckIn() {
         {/* COLUMNA IZQUIERDA: Vehículo y Fotos */}
         <div className="lg:col-span-1 space-y-6">
           
-          {/* Tarjeta 1: Datos Vehículo */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
               <CarFront className="text-blue-500" /> Datos del Vehículo
@@ -192,7 +246,6 @@ export default function CheckIn() {
             </div>
           </div>
 
-          {/* Tarjeta 2: Estado Visual (Fotos) */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <h3 className="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2 border-b pb-3">
               <Camera className="text-blue-500" /> Estado Visual (Fotos)
