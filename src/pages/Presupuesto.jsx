@@ -46,11 +46,41 @@ export default function Presupuesto() {
   };
 
   const handleWhatsApp = () => {
-    if (!cliente.telefono) {
+    if (!cliente.telefono || cliente.telefono.trim() === '+549') {
       alert("Por favor, ingresá el teléfono del cliente para enviar el WhatsApp.");
       return;
     }
-    const texto = `Hola ${cliente.nombre || 'amigo/a'}, te envío el presupuesto para tu ${cliente.vehiculo || 'vehículo'} desde *JOTA M.*.\n\n*Total estimado:* $${total.toLocaleString('es-AR')}\n\nQuedamos a tu disposición. ¡Un saludo!`;
+
+    // Armamos el detalle de cada ítem
+    const detalleItems = items.map(item => {
+      const isClientPart = item.tipo === 'Repuesto (Trae Cliente)';
+      const itemTotal = isClientPart ? 0 : Number(item.cantidad) * Number(item.precioUnitario);
+      return `• ${item.descripcion || 'Sin descripción'} | ${item.tipo} | Cant: ${item.cantidad} | P.Unit: ${isClientPart ? '-' : '$' + formatearMiles(item.precioUnitario)} | Subtotal: ${isClientPart ? 'Provisto por cliente' : '$' + formatearMiles(itemTotal)}`;
+    }).join('\n');
+
+    const textoDescuento = Number(descuento) > 0 ? `\n*Descuento (${descuento}%):* -$${formatearMiles(montoDescuento)}\n` : '\n';
+
+    const texto = `Hola ${cliente.nombre || 'estimado/a'}, te enviamos el presupuesto desde *JOTA M.* 🔧\n\n` +
+      `📍 R. Rojas 408, San Miguel de Tucumán\n📞 +54 9 3814 77-3368\n\n` +
+      `━━━━━━━━━━━━━━━━\n` +
+      `*PRESUPUESTO*\n` +
+      `━━━━━━━━━━━━━━━━\n\n` +
+      `*Fecha:* ${fechaActual}\n` +
+      `*Válido hasta:* ${fechaVencimientoStr}\n\n` +
+      `*Cliente:* ${cliente.nombre || 'Consumidor Final'}\n` +
+      `*Vehículo:* ${cliente.vehiculo || 'No especificado'}${cliente.patente ? ' | Patente: ' + cliente.patente : ''}\n\n` +
+      `━━━━━━━━━━━━━━━━\n` +
+      `*DETALLE DEL TRABAJO:*\n` +
+      `━━━━━━━━━━━━━━━━\n\n` +
+      `${detalleItems}\n\n` +
+      `━━━━━━━━━━━━━━━━\n` +
+      `*Subtotal:* $${formatearMiles(subtotal)}` +
+      `${textoDescuento}` +
+      `*TOTAL: $${formatearMiles(total)}*\n` +
+      `━━━━━━━━━━━━━━━━\n\n` +
+      `⚠️ _Este presupuesto es válido por 15 días corridos. Los valores están sujetos a modificaciones en los precios de repuestos por parte de proveedores._\n\n` +
+      `¡Gracias por confiar en nosotros! Quedamos a tu disposición. 🙌`;
+
     const url = `https://wa.me/${cliente.telefono.replace(/\D/g, '')}?text=${encodeURIComponent(texto)}`;
     window.open(url, '_blank');
   };

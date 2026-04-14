@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock, Package, Camera, Printer, Share2, MessageCircle, Mail } from 'lucide-react';
+import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock, Package, Camera, Printer, Share2, MessageCircle } from 'lucide-react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase/config'; 
 import logoImg from '../assets/logo.png'; 
@@ -72,27 +72,58 @@ export default function Historial() {
 
   const ejecutarCompartir = () => {
     const { method, contact } = shareModal;
-    if (!contact.trim()) {
-      alert(`Por favor ingresá un ${method === 'whatsapp' ? 'teléfono' : 'correo'}.`);
+    if (!contact.trim() || contact.trim() === '+549') {
+      alert('Por favor ingresá el número de WhatsApp del cliente.');
       return;
     }
 
     // Armamos la lista de repuestos limpia
-    const totalRepuestos = otSeleccionada.repuestosUtilizados?.length 
-      ? otSeleccionada.repuestosUtilizados.map(r => `${r.cantidad}x ${r.nombre}`).join(', ')
-      : 'Ninguno registrado';
+    const listaRepuestos = otSeleccionada.repuestosUtilizados?.length 
+      ? otSeleccionada.repuestosUtilizados.map(r => `• ${r.cantidad}x ${r.nombre}`).join('\n')
+      : '_Ninguno registrado_';
 
-    // Armamos el texto súper profesional que se enviará
-    const texto = `Hola, te envío el reporte de servicio técnico de *JOTA M.* para tu vehículo *${otSeleccionada.marca} ${otSeleccionada.modelo} (${otSeleccionada.patente})*.\n\n*Fecha de Ingreso:* ${formatearFecha(otSeleccionada.fecha)}\n*Estado:* ${otSeleccionada.estado}\n\n*Trabajos Solicitados:*\n- ${otSeleccionada.servicios?.join('\n- ')}\n\n*Repuestos Utilizados:*\n${totalRepuestos}\n\n${otSeleccionada.estado === 'Cerrada' ? `*Diagnóstico / Recomendaciones:*\n${otSeleccionada.diagnostico || 'Sin observaciones'}\n\n` : ''}¡Gracias por elegirnos!\nQuedamos a tu disposición.`;
+    // Lista de trabajos
+    const listaTrabajos = otSeleccionada.servicios?.map(s => `• ${s}`).join('\n') || '_Sin trabajos registrados_';
 
-    if (method === 'whatsapp') {
-      const url = `https://wa.me/${contact.replace(/\D/g, '')}?text=${encodeURIComponent(texto)}`;
-      window.open(url, '_blank');
-    } else {
-      const subject = `Reporte de Servicio JOTA M. - ${otSeleccionada.patente}`;
-      const url = `mailto:${contact}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(texto)}`;
-      window.location.href = url;
+    // Fechas
+    const fechaIngreso = formatearFecha(otSeleccionada.fecha);
+    const horaParte = otSeleccionada.horaIngreso ? ` a las ${otSeleccionada.horaIngreso} hs` : '';
+    let bloqueFechas = `*Fecha de Ingreso:* ${fechaIngreso}${horaParte}`;
+    if (otSeleccionada.estado === 'Cerrada' && otSeleccionada.fechaCierre) {
+      const horaCierre = otSeleccionada.horaCierre ? ` a las ${otSeleccionada.horaCierre} hs` : '';
+      bloqueFechas += `\n*Fecha de Cierre:* ${formatearFecha(otSeleccionada.fechaCierre)}${horaCierre}`;
     }
+
+    // Bloques opcionales (solo si está cerrada)
+    let bloqueInforme = '';
+    if (otSeleccionada.estado === 'Cerrada') {
+      bloqueInforme = `\n━━━━━━━━━━━━━━━━\n*INFORME TÉCNICO:*\n━━━━━━━━━━━━━━━━\n\n${otSeleccionada.informe || 'Sin informe detallado.'}\n\n━━━━━━━━━━━━━━━━\n*DIAGNÓSTICO / RECOMENDACIONES:*\n━━━━━━━━━━━━━━━━\n\n${otSeleccionada.diagnostico || 'Sin recomendaciones registradas.'}\n`;
+    }
+
+    const texto = `Hola, te enviamos el reporte de servicio técnico de *JOTA M.* 🔧\n\n` +
+      `📍 R. Rojas 408, San Miguel de Tucumán\n📞 +54 9 3814 77-3368\n\n` +
+      `━━━━━━━━━━━━━━━━\n` +
+      `*REPORTE DE SERVICIO*\n` +
+      `━━━━━━━━━━━━━━━━\n\n` +
+      `*N° OT:* ${otSeleccionada.id_ot}\n` +
+      `*Estado:* ${otSeleccionada.estado}\n\n` +
+      `*Vehículo:* ${otSeleccionada.marca} ${otSeleccionada.modelo} (${otSeleccionada.anio})\n` +
+      `*Patente:* ${otSeleccionada.patente}\n\n` +
+      `${bloqueFechas}\n\n` +
+      `━━━━━━━━━━━━━━━━\n` +
+      `*TRABAJOS REALIZADOS:*\n` +
+      `━━━━━━━━━━━━━━━━\n\n` +
+      `${listaTrabajos}\n\n` +
+      `━━━━━━━━━━━━━━━━\n` +
+      `*REPUESTOS UTILIZADOS:*\n` +
+      `━━━━━━━━━━━━━━━━\n\n` +
+      `${listaRepuestos}\n` +
+      `${bloqueInforme}\n` +
+      `━━━━━━━━━━━━━━━━\n\n` +
+      `¡Gracias por confiar en nosotros! Quedamos a tu disposición. 🙌`;
+
+    const url = `https://wa.me/${contact.replace(/\D/g, '')}?text=${encodeURIComponent(texto)}`;
+    window.open(url, '_blank');
 
     setShareModal({ ...shareModal, isOpen: false });
   };
@@ -215,22 +246,13 @@ export default function Historial() {
                     <button onClick={() => setShareModal({ ...shareModal, isOpen: false })} className="text-slate-400 hover:text-slate-600"><X size={20}/></button>
                   </div>
                   
-                  <div className="flex gap-2 mb-5">
-                    <button onClick={() => setShareModal({...shareModal, method: 'whatsapp'})} className={`flex-1 py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-colors ${shareModal.method === 'whatsapp' ? 'bg-[#25D366] text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                      <MessageCircle size={18} /> WhatsApp
-                    </button>
-                    <button onClick={() => setShareModal({...shareModal, method: 'email'})} className={`flex-1 py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-colors ${shareModal.method === 'email' ? 'bg-blue-500 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                      <Mail size={18} /> Email
-                    </button>
-                  </div>
-
                   <div className="mb-6">
                     <label className="block text-sm font-bold text-slate-700 mb-2">
-                      {shareModal.method === 'whatsapp' ? 'Número de WhatsApp (Ej: 3811234567)' : 'Correo Electrónico del Cliente'}
+                      Número de WhatsApp (Ej: 3811234567)
                     </label>
                     <input 
-                      type={shareModal.method === 'whatsapp' ? 'tel' : 'email'} 
-                      placeholder={shareModal.method === 'whatsapp' ? 'Ej: 381 1234567' : 'cliente@email.com'}
+                      type="tel" 
+                      placeholder="Ej: 381 1234567"
                       value={shareModal.contact}
                       onChange={(e) => setShareModal({...shareModal, contact: e.target.value})}
                       className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-blue-600 outline-none bg-slate-50"
