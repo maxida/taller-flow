@@ -196,7 +196,7 @@ export default function CheckIn() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto pb-10">
+    <div className="max-w-7xl mx-auto pb-10 px-4 sm:px-6 lg:px-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
@@ -209,10 +209,11 @@ export default function CheckIn() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Cambiamos la grilla a 12 columnas para controlar mejor las proporciones */}
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* COLUMNA IZQUIERDA: Vehículo y Fotos */}
-        <div className="lg:col-span-1 space-y-6">
+        {/* COLUMNA IZQUIERDA: Vehículo y Fotos (Ocupa 4 de 12 columnas en pantallas grandes) */}
+        <div className="lg:col-span-4 space-y-6">
           
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
@@ -287,26 +288,28 @@ export default function CheckIn() {
 
         </div>
 
-        {/* COLUMNA DERECHA: Checklist y Botón de Envío */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* COLUMNA DERECHA: Checklist y Botón de Envío (Ocupa 8 de 12 columnas en pantallas grandes) */}
+        <div className="lg:col-span-8 space-y-6">
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
               <Wrench className="text-blue-500" /> Trabajo a Realizar (Checklist)
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Ahora el Checklist usa 3 columnas en pantallas medianas/grandes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Object.entries(CATEGORIAS_TRABAJO).map(([categoria, servicios]) => (
-                <div key={categoria} className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-                  <h4 className="font-semibold text-slate-700 mb-3">{categoria}</h4>
+                <div key={categoria} className="bg-slate-50 rounded-lg p-4 border border-slate-100 h-fit">
+                  <h4 className="font-semibold text-slate-700 mb-3 leading-tight">{categoria}</h4>
                   <div className="space-y-2">
                     {servicios.map(servicio => {
                       const isSelected = serviciosSeleccionados.includes(servicio);
                       return (
-                        <label key={servicio} className={`flex items-center gap-3 p-2 rounded-md cursor-pointer transition-all duration-200 ${isSelected ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'hover:bg-slate-100 border-transparent'} border`}>
+                        <label key={servicio} className={`flex items-start gap-3 p-2 rounded-md cursor-pointer transition-all duration-200 ${isSelected ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'hover:bg-slate-100 border-transparent'} border`}>
                           <input type="checkbox" className="hidden" checked={isSelected} onChange={() => toggleServicio(servicio)} />
-                          <div className={`flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 bg-white'}`}>
+                          <div className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 bg-white'}`}>
                             {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
                           </div>
-                          <span className={`text-sm select-none ${isSelected ? 'text-emerald-900 font-semibold' : 'text-slate-600'}`}>{servicio}</span>
+                          <span className={`text-xs md:text-sm select-none leading-snug ${isSelected ? 'text-emerald-900 font-semibold' : 'text-slate-600'}`}>{servicio}</span>
                         </label>
                       );
                     })}
@@ -317,7 +320,7 @@ export default function CheckIn() {
           </div>
 
           <div className="flex justify-end">
-            <button type="submit" disabled={serviciosSeleccionados.length === 0 || isSubmitting} className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold py-3 px-8 rounded-lg shadow-sm flex items-center gap-2 transition-all">
+            <button type="submit" disabled={serviciosSeleccionados.length === 0 || isSubmitting} className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold py-3 px-8 rounded-lg shadow-sm flex items-center gap-2 transition-all text-lg">
               {isSubmitting ? (
                 <>
                   <Loader2 className="animate-spin" size={20} /> 

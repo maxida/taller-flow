@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock, Package, Camera } from 'lucide-react';
+import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock, Package, Camera, Printer } from 'lucide-react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase/config'; 
+import logoImg from '../assets/logo.png'; // Asegurate de tener el logo importado igual que en el Presupuesto
 
-// Diccionario para traducir la clave de la base de datos a un nombre lindo para el usuario
 const ZONAS_FOTOS_LABELS = {
   tablero: 'Tablero / Km',
   frente: 'Frente',
@@ -16,7 +16,6 @@ export default function Historial() {
   const [ots, setOts] = useState([]); 
   const [isLoading, setIsLoading] = useState(true);
 
-  // Estados para los 5 filtros
   const [filtroPatente, setFiltroPatente] = useState('');
   const [filtroOT, setFiltroOT] = useState('');
   const [filtroFecha, setFiltroFecha] = useState('');
@@ -25,7 +24,6 @@ export default function Historial() {
 
   const [otSeleccionada, setOtSeleccionada] = useState(null);
 
-  // Función infalible para formatear fechas
   const formatearFecha = (fechaISO) => {
     if (!fechaISO) return '';
     const partes = fechaISO.split('-');
@@ -65,9 +63,13 @@ export default function Historial() {
     return coincidePatente && coincideOT && coincideFecha && coincideFechaCierre && coincideEstado;
   });
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div className="max-w-7xl mx-auto pb-10">
-      <div className="mb-8">
+      <div className="mb-8 print:hidden">
         <h2 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
           <History className="text-blue-600" size={32} />
           Historial de Vehículos
@@ -76,7 +78,7 @@ export default function Historial() {
       </div>
 
       {/* BARRA DE FILTROS */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 print:hidden">
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Patente</label>
           <div className="relative">
@@ -123,18 +125,18 @@ export default function Historial() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-300 flex flex-col items-center">
+        <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-300 flex flex-col items-center print:hidden">
           <Loader2 size={48} className="animate-spin text-blue-500 mb-4" />
           <h3 className="text-lg font-medium text-slate-600">Cargando historial...</h3>
         </div>
       ) : otsFiltradas.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-300">
+        <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-300 print:hidden">
           <History size={48} className="mx-auto text-slate-300 mb-4" />
           <h3 className="text-lg font-medium text-slate-600">No se encontraron órdenes de trabajo</h3>
           <button onClick={() => { setFiltroPatente(''); setFiltroOT(''); setFiltroFecha(''); setFiltroFechaCierre(''); setFiltroEstado('Todas'); }} className="mt-4 text-blue-600 hover:text-blue-800 font-medium">Limpiar Filtros</button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:hidden">
           {otsFiltradas.map((ot) => (
             <div key={ot.firebaseId} onClick={() => setOtSeleccionada(ot)} className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-400 cursor-pointer transition-all p-5 flex flex-col group">
               <div className="flex justify-between items-start mb-4">
@@ -169,16 +171,21 @@ export default function Historial() {
         </div>
       )}
 
-      {/* MODAL DE DETALLE DE OT */}
+      {/* MODAL DE DETALLE DE OT (Se oculta en impresión) */}
       {otSeleccionada && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-6 border-b border-slate-100">
               <div>
                 <h3 className="text-2xl font-bold text-slate-800">Detalle de {otSeleccionada.id_ot}</h3>
                 <p className="text-slate-500 font-medium">{otSeleccionada.patente} • {otSeleccionada.marca} {otSeleccionada.modelo} ({otSeleccionada.anio})</p>
               </div>
-              <button onClick={() => setOtSeleccionada(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={24} className="text-slate-500" /></button>
+              <div className="flex items-center gap-2">
+                <button onClick={handlePrint} className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-100 transition-colors">
+                  <Printer size={18} /> Exportar PDF
+                </button>
+                <button onClick={() => setOtSeleccionada(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={24} className="text-slate-500" /></button>
+              </div>
             </div>
 
             <div className="p-6 overflow-y-auto space-y-6">
@@ -204,7 +211,7 @@ export default function Historial() {
                 </div>
               </div>
 
-              {/* NUEVA SECCIÓN: ESTADO VISUAL (FOTOS) */}
+              {/* ESTADO VISUAL (FOTOS) */}
               {otSeleccionada.fotos && Object.keys(otSeleccionada.fotos).length > 0 && (
                 <div className="bg-slate-50/50 p-5 rounded-xl border border-slate-100">
                   <h4 className="font-semibold text-slate-700 mb-3 text-sm uppercase tracking-wider flex items-center gap-2">
@@ -246,7 +253,7 @@ export default function Historial() {
                 </ul>
               </div>
 
-              {/* SECCIÓN: REPUESTOS UTILIZADOS EN EL HISTORIAL */}
+              {/* REPUESTOS UTILIZADOS EN EL HISTORIAL */}
               {otSeleccionada.repuestosUtilizados && otSeleccionada.repuestosUtilizados.length > 0 && (
                 <div>
                   <h4 className="font-bold text-slate-700 mb-3 flex items-center gap-2">
@@ -281,6 +288,164 @@ export default function Historial() {
           </div>
         </div>
       )}
+
+      {/* ========================================================= */}
+      {/* VISTA DE IMPRESIÓN (Solo visible al generar el PDF)       */}
+      {/* ========================================================= */}
+      {otSeleccionada && (
+        <div id="zona-impresion" className="hidden print:flex flex-col bg-white w-full text-slate-800 p-8">
+          {/* Cabecera del Reporte */}
+          <div className="flex justify-between items-center border-b-2 border-slate-800 pb-4 mb-6">
+            <div className="flex items-center gap-4">
+              <img src={logoImg} alt="Logo" className="w-16 h-16 object-contain" />
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-tight whitespace-nowrap">JOTA M.</h1>
+                <p className="text-sm text-slate-500 font-medium">R. Rojas 408, T4002HHJ San Miguel de Tucumán, Tucumán</p>
+                <p className="text-sm text-slate-500 font-medium">Tel: +54 9 3814 77-3368 | CUIT: 20-12345678-9</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-xl font-bold text-blue-600 mb-1 uppercase tracking-widest leading-none">Reporte de Servicio</div>
+              <p className="text-sm font-bold text-slate-800">{otSeleccionada.id_ot}</p>
+              <p className="text-xs font-semibold text-slate-500">Estado: {otSeleccionada.estado}</p>
+            </div>
+          </div>
+
+          {/* Datos del Vehículo y Fechas */}
+          <div className="bg-slate-50 rounded-lg p-4 mb-6 border border-slate-200 grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Vehículo / Cliente:</p>
+              <p className="font-bold text-lg text-slate-800 leading-tight flex items-center gap-2">
+                <Car size={16} className="text-slate-400" /> {otSeleccionada.marca} {otSeleccionada.modelo} ({otSeleccionada.anio})
+              </p>
+              <p className="text-sm text-slate-600 uppercase bg-white border border-slate-300 px-2 py-0.5 rounded inline-block mt-2 font-mono">{otSeleccionada.patente}</p>
+            </div>
+            <div className="text-right">
+              <div className="mb-2">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Fecha de Ingreso:</p>
+                <p className="text-sm font-semibold text-slate-800">{formatearFecha(otSeleccionada.fecha)} {otSeleccionada.horaIngreso && `a las ${otSeleccionada.horaIngreso} hs`}</p>
+              </div>
+              {otSeleccionada.estado === 'Cerrada' && (
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Fecha de Cierre:</p>
+                  <p className="text-sm font-semibold text-emerald-600">{formatearFecha(otSeleccionada.fechaCierre)} {otSeleccionada.horaCierre && `a las ${otSeleccionada.horaCierre} hs`}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Galería de Fotos */}
+          {otSeleccionada.fotos && Object.keys(otSeleccionada.fotos).length > 0 && (
+            <div className="mb-6">
+              <h4 className="font-bold text-slate-700 mb-2 border-b border-slate-200 pb-1 text-sm uppercase">Evidencia Visual al Ingreso</h4>
+              <div className="grid grid-cols-5 gap-2">
+                {Object.entries(otSeleccionada.fotos).map(([zona, url]) => (
+                  <div key={zona} className="rounded-lg overflow-hidden border border-slate-200 h-24 bg-slate-100 relative">
+                    <img src={url} alt={zona} className="w-full h-full object-cover" />
+                    <div className="absolute inset-x-0 bottom-0 bg-white/90 pt-1 pb-1 px-1">
+                      <p className="text-slate-800 text-[9px] font-bold uppercase text-center">{ZONAS_FOTOS_LABELS[zona] || zona}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            {/* Trabajos Realizados */}
+            <div>
+              <h4 className="font-bold text-slate-700 mb-2 border-b border-slate-200 pb-1 text-sm uppercase">Trabajos Realizados</h4>
+              <ul className="space-y-1">
+                {otSeleccionada.servicios?.map((srv, idx) => (
+                  <li key={idx} className="flex items-start gap-1.5 text-slate-700 text-xs">
+                    <CheckCircle size={12} className="text-blue-500 mt-0.5 shrink-0" />
+                    {srv}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Repuestos */}
+            <div>
+              <h4 className="font-bold text-slate-700 mb-2 border-b border-slate-200 pb-1 text-sm uppercase">Repuestos Utilizados</h4>
+              {otSeleccionada.repuestosUtilizados && otSeleccionada.repuestosUtilizados.length > 0 ? (
+                <ul className="space-y-1">
+                  {otSeleccionada.repuestosUtilizados.map((rep, idx) => (
+                    <li key={idx} className="flex items-center gap-1.5 text-slate-700 text-xs">
+                      <span className="font-bold text-slate-500">{rep.cantidad}x</span> {rep.nombre}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-slate-500 italic">- No se registraron repuestos del taller -</p>
+              )}
+            </div>
+          </div>
+
+          {/* Informes */}
+          {otSeleccionada.estado === 'Cerrada' && (
+            <div className="space-y-4 flex-1">
+              <div>
+                <h4 className="font-bold text-slate-700 mb-1 text-sm uppercase">Informe Técnico</h4>
+                <div className="bg-slate-50 p-3 rounded border border-slate-200 text-sm text-slate-800 whitespace-pre-wrap min-h-[60px]">
+                  {otSeleccionada.informe || 'Sin informe detallado.'}
+                </div>
+              </div>
+              <div>
+                <h4 className="font-bold text-amber-700 mb-1 text-sm uppercase flex items-center gap-1.5">
+                  <AlertTriangle size={14} /> Diagnóstico a Futuro / Recomendaciones
+                </h4>
+                <div className="bg-amber-50 p-3 rounded border border-amber-200 text-sm text-amber-900 whitespace-pre-wrap min-h-[40px]">
+                  {otSeleccionada.diagnostico || 'Sin recomendaciones registradas.'}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Pie de Página */}
+          <div className="mt-8 pt-4 border-t border-slate-200 text-center text-slate-400 text-[10px]">
+            Documento generado automáticamente por JOTA M. 
+          </div>
+        </div>
+      )}
+
+      {/* ESTILOS DE IMPRESIÓN */}
+      <style>{`
+        @media print {
+          @page { 
+            margin: 15mm 20mm; 
+            size: A4 portrait; 
+          }
+          body { 
+            background-color: white !important; 
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important; 
+          }
+          
+          body * {
+            visibility: hidden;
+          }
+          
+          #zona-impresion, #zona-impresion * {
+            visibility: visible;
+          }
+          
+          #zona-impresion {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100vw !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: flex !important;
+          }
+
+          .print\\:hidden {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
