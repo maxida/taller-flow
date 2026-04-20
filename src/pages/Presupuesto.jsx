@@ -51,7 +51,6 @@ export default function Presupuesto() {
       return;
     }
 
-    // Armamos el detalle de cada ítem
     const detalleItems = items.map(item => {
       const isClientPart = item.tipo === 'Repuesto (Trae Cliente)';
       const itemTotal = isClientPart ? 0 : Number(item.cantidad) * Number(item.precioUnitario);
@@ -102,7 +101,6 @@ export default function Presupuesto() {
 
       <div className="flex flex-col xl:flex-row gap-8 print:block print:w-full">
         
-        {/* PANEL IZQUIERDO: FORMULARIO */}
         <div className="xl:w-5/12 space-y-6 print:hidden">
           
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -175,18 +173,16 @@ export default function Presupuesto() {
           </div>
         </div>
 
-        {/* PANEL DERECHO: VISTA PREVIA HOJA A4 */}
         <div className="xl:w-7/12 w-full print:w-full print:m-0 print:p-0">
           <div id="zona-impresion" className="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200 text-slate-800 flex flex-col print:shadow-none print:border-none print:w-full print:max-w-none print:p-8">
             
-            {/* Cabecera */}
             <div className="flex justify-between items-center border-b-2 border-slate-800 pb-4 mb-6">
               <div className="flex items-center gap-4">
                 <img src={logoImg} alt="Logo" className="w-14 h-14 object-contain print:w-16 print:h-16" />
                 <div>
                   <h1 className="text-2xl print:text-3xl font-black text-slate-900 tracking-tight leading-tight whitespace-nowrap">JOTA M.</h1>
                   <p className="text-sm print:text-sm text-slate-500 font-medium">R. Rojas 408, T4002HHJ San Miguel de Tucumán, Tucumán</p>
-                  <p className="text-sm print:text-sm text-slate-500 font-medium">Tel: +54 9 3814 77-3368 | CUIT: 20-12345678-9</p>
+                  <p className="text-sm print:text-sm text-slate-500 font-medium">Tel: +54 9 3814 77-3368 | CUIT: 20-41125962-6 </p>
                 </div>
               </div>
               <div className="text-right">
@@ -196,7 +192,6 @@ export default function Presupuesto() {
               </div>
             </div>
 
-            {/* Datos del Cliente */}
             <div className="bg-slate-50 rounded-lg p-4 print:p-4 mb-6 border border-slate-200 flex justify-between items-center">
               <div>
                 <p className="text-xs print:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Presupuestado a:</p>
@@ -212,7 +207,6 @@ export default function Presupuesto() {
               </div>
             </div>
 
-            {/* Tabla de Items */}
             <div className="flex-1">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -251,7 +245,6 @@ export default function Presupuesto() {
               </table>
             </div>
 
-            {/* Totales */}
             <div className="mt-6 border-t-2 border-slate-800 pt-4 flex justify-end">
               <div className="w-64 print:w-64 space-y-2">
                 <div className="flex justify-between text-slate-600 font-medium text-sm print:text-sm">
@@ -271,7 +264,20 @@ export default function Presupuesto() {
               </div>
             </div>
 
-            {/* Pie de Página / Legales */}
+            {/* BLOQUE DE FIRMAS - PRESUPUESTO */}
+            <div className="hidden print:flex mt-16 pt-8 justify-around items-start">
+              <div className="text-center w-64">
+                <div className="border-t border-slate-800 mb-2"></div>
+                <p className="text-xs font-bold text-slate-700">Firma del Cliente</p>
+                <p className="text-[10px] text-slate-500">Acepto presupuesto y autorizo la reparación</p>
+              </div>
+              <div className="text-center w-64">
+                <div className="border-t border-slate-800 mb-2"></div>
+                <p className="text-xs font-bold text-slate-700">Aclaración / DNI</p>
+                <p className="text-[10px] text-slate-500">Titular o persona autorizada para el retiro</p>
+              </div>
+            </div>
+
             <div className="mt-12 pt-4 border-t border-slate-200 flex items-start gap-2 text-slate-500 text-xs print:text-xs leading-relaxed">
               <CheckCircle size={16} className="text-blue-500 shrink-0 mt-0.5 print:text-slate-400" />
               <p>
@@ -286,11 +292,10 @@ export default function Presupuesto() {
 
       </div>
 
-      {/* ESTILOS DE IMPRESIÓN MEJORADOS */}
       <style>{`
         @media print {
           @page { 
-            margin: 15mm 20mm; /* Márgenes perfectos para impresora */
+            margin: 15mm 20mm; 
             size: A4 portrait; 
           }
           body { 
@@ -299,17 +304,14 @@ export default function Presupuesto() {
             print-color-adjust: exact !important; 
           }
           
-          /* Oculta toda la app */
           body * {
             visibility: hidden;
           }
           
-          /* Muestra SOLO la zona de impresión */
           #zona-impresion, #zona-impresion * {
             visibility: visible;
           }
           
-          /* Posiciona la zona de impresión ocupando todo el ancho disponible */
           #zona-impresion {
             position: absolute;
             left: 0;
