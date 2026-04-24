@@ -1,18 +1,20 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { ClipboardList, Wrench, History, LayoutDashboard, Package, Calculator } from 'lucide-react';
+import { ClipboardList, Wrench, History, LayoutDashboard, Package, Calculator, LogOut, User} from 'lucide-react';
 import logoImg from '../assets/logo.png';
-
+import { useAuth } from '../context/AuthContext';
 
 export default function Layout() {
   const location = useLocation();
+  const { logout } = useAuth(); // Extraemos la función para cerrar sesión
 
   const menuItems = [
-    { name: 'Ingreso Vehículo', path: '/', icon: <ClipboardList size={20} /> },
+    { name: 'Ingreso Vehículo', path: '/ingreso', icon: <ClipboardList size={20} /> },
     { name: 'Gestión de OT', path: '/gestion', icon: <Wrench size={20} /> },
     { name: 'Historial', path: '/historial', icon: <History size={20} /> },
     { name: 'Inventario', path: '/inventario', icon: <Package size={20} /> },
     { name: 'Presupuesto', path: '/presupuesto', icon: <Calculator size={20} /> },
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'Perfil', path: '/perfil', icon: <User size={20} /> },
   ];
 
   return (
@@ -48,10 +50,17 @@ export default function Layout() {
             );
           })}
         </nav>
-        {/* Footer sutil */}
-        <div className="px-4 py-4">
+        
+        {/* Footer y Cerrar Sesión */}
+        <div className="p-4 border-t border-slate-800">
+          <button 
+            onClick={() => logout()} 
+            className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white py-2.5 rounded-lg transition-colors font-medium text-sm mb-4"
+          >
+            <LogOut size={16} /> Cerrar Sesión
+          </button>
           <div className="text-center">
-            <span className="text-white/70 italic text-xs font-medium">Developed by <span className="font-semibold">Ing. Quinteros</span> v2.0</span>
+            <span className="text-white/50 italic text-[10px] font-medium tracking-wide">Developed by <span className="font-semibold">Ing. Quinteros</span> v2.0</span>
           </div>
         </div>
       </aside>

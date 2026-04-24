@@ -1,22 +1,18 @@
-// src/firebase/config.js
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth"; // <-- 1. NUEVO IMPORT
 
-
-// ¡REEMPLAZÁ ESTE OBJETO CON EL QUE TE DIO FIREBASE!
 const firebaseConfig = {
-  apiKey: "AIzaSyAou_HrKoWqUGDWUDTJh640Kz5g3Guk-EI",
-  authDomain: "taller-flow-e2620.firebaseapp.com",
-  projectId: "taller-flow-e2620",
-  storageBucket: "taller-flow-e2620.firebasestorage.app",
-  messagingSenderId: "354481079504",
-  appId: "1:354481079504:web:cd22e55391830dde6f8ad5"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// 1. Inicializamos la conexión con tu proyecto de Firebase
 const app = initializeApp(firebaseConfig);
-
-// 2. Inicializamos Firestore y lo exportamos para usarlo en otras pantallas
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const auth = getAuth(app); // <-- 2. NUEVA EXPORTACIÓN
