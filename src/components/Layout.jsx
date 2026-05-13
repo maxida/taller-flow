@@ -60,7 +60,7 @@ export default function Layout() {
             <LogOut size={16} /> Cerrar Sesión
           </button>
           <div className="text-center">
-            <span className="text-white/50 italic text-[10px] font-medium tracking-wide">Developed by <span className="font-semibold">Ing. Quinteros</span> v2.0</span>
+            <span className="text-white/50 italic text-[10px] font-medium tracking-wide">Developed by <span className="font-semibold">Ing. Quinteros</span> v2.1</span>
           </div>
         </div>
       </aside>

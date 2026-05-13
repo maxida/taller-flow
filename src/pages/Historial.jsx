@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock, Package, Camera, Printer, Share2, MessageCircle } from 'lucide-react';
+import { History, Search, Calendar, Car, FileText, AlertTriangle, CheckCircle, X, Wrench, Filter, Loader2, Clock, Package, Camera, Printer, Share2, MessageCircle, Calculator } from 'lucide-react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase/config'; 
 import logoImg from '../assets/logo.png'; 
@@ -24,7 +24,6 @@ export default function Historial() {
 
   const [otSeleccionada, setOtSeleccionada] = useState(null);
   
-  // Estado para manejar la ventanita de Compartir
   const [shareModal, setShareModal] = useState({ isOpen: false, method: 'whatsapp', contact: '+549' });
 
   const formatearFecha = (fechaISO) => {
@@ -33,6 +32,8 @@ export default function Historial() {
     if (partes.length !== 3) return fechaISO;
     return `${partes[2]}/${partes[1]}/${partes[0]}`;
   };
+
+  const formatearMiles = (num) => Number(num).toLocaleString('es-AR');
 
   useEffect(() => {
     const fetchOTs = async () => {
@@ -77,27 +78,40 @@ export default function Historial() {
       return;
     }
 
-    // Armamos la lista de repuestos limpia
     const listaRepuestos = otSeleccionada.repuestosUtilizados?.length 
       ? otSeleccionada.repuestosUtilizados.map(r => `• ${r.cantidad}x ${r.nombre}`).join('\n')
       : '_Ninguno registrado_';
 
-    // Lista de trabajos
     const listaTrabajos = otSeleccionada.servicios?.map(s => `• ${s}`).join('\n') || '_Sin trabajos registrados_';
 
-    // Fechas
     const fechaIngreso = formatearFecha(otSeleccionada.fecha);
     const horaParte = otSeleccionada.horaIngreso ? ` a las ${otSeleccionada.horaIngreso} hs` : '';
     let bloqueFechas = `*Fecha de Ingreso:* ${fechaIngreso}${horaParte}`;
-    if (otSeleccionada.estado === 'Cerrada' && otSeleccionada.fechaCierre) {
-      const horaCierre = otSeleccionada.horaCierre ? ` a las ${otSeleccionada.horaCierre} hs` : '';
-      bloqueFechas += `\n*Fecha de Cierre:* ${formatearFecha(otSeleccionada.fechaCierre)}${horaCierre}`;
-    }
-
-    // Bloques opcionales (solo si está cerrada)
+    
     let bloqueInforme = '';
+    let bloqueFacturacion = '';
+
     if (otSeleccionada.estado === 'Cerrada') {
+      if (otSeleccionada.fechaCierre) {
+        const horaCierre = otSeleccionada.horaCierre ? ` a las ${otSeleccionada.horaCierre} hs` : '';
+        bloqueFechas += `\n*Fecha de Cierre:* ${formatearFecha(otSeleccionada.fechaCierre)}${horaCierre}`;
+      }
+
       bloqueInforme = `\n━━━━━━━━━━━━━━━━\n*INFORME TÉCNICO:*\n━━━━━━━━━━━━━━━━\n\n${otSeleccionada.informe || 'Sin informe detallado.'}\n\n━━━━━━━━━━━━━━━━\n*DIAGNÓSTICO / RECOMENDACIONES:*\n━━━━━━━━━━━━━━━━\n\n${otSeleccionada.diagnostico || 'Sin recomendaciones registradas.'}\n`;
+
+      // NUEVO: Bloque de Facturación para WhatsApp
+      if (otSeleccionada.totalFinal !== undefined) {
+        const subtotalRep = otSeleccionada.costoRepuestos || 0;
+        const subtotalMO = otSeleccionada.costoManoObra || 0;
+        const desc = otSeleccionada.descuento || 0;
+        const montoDesc = ((subtotalRep + subtotalMO) * desc) / 100;
+
+        bloqueFacturacion = `\n━━━━━━━━━━━━━━━━\n*RESUMEN DE FACTURACIÓN:*\n━━━━━━━━━━━━━━━━\n` +
+          `• Repuestos: $${formatearMiles(subtotalRep)}\n` +
+          `• Mano de Obra: $${formatearMiles(subtotalMO)}\n` +
+          (desc > 0 ? `• Descuento (${desc}%): -$${formatearMiles(montoDesc)}\n` : '') +
+          `*TOTAL FINAL: $${formatearMiles(otSeleccionada.totalFinal)}*\n`;
+      }
     }
 
     const texto = `Hola, te enviamos el reporte de servicio técnico de *JOTA M.* 🔧\n\n` +
@@ -118,8 +132,8 @@ export default function Historial() {
       `*REPUESTOS UTILIZADOS:*\n` +
       `━━━━━━━━━━━━━━━━\n\n` +
       `${listaRepuestos}\n` +
-      `${bloqueInforme}\n` +
-      `━━━━━━━━━━━━━━━━\n\n` +
+      `${bloqueInforme}` +
+      `${bloqueFacturacion}\n` +
       `¡Gracias por confiar en nosotros! Quedamos a tu disposición. 🙌`;
 
     const url = `https://wa.me/${contact.replace(/\D/g, '')}?text=${encodeURIComponent(texto)}`;
@@ -205,7 +219,13 @@ export default function Historial() {
                   <h3 className="text-xl font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{ot.patente}</h3>
                   <p className="text-sm font-medium text-slate-500">{ot.id_ot}</p>
                 </div>
-                <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${ot.estado === 'Abierta' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>{ot.estado}</span>
+                <div className="text-right">
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold block mb-1 ${ot.estado === 'Abierta' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>{ot.estado}</span>
+                  {/* NUEVO: Mostrar total en la tarjeta si está cerrada */}
+                  {ot.estado === 'Cerrada' && ot.totalFinal !== undefined && (
+                    <span className="text-sm font-black text-blue-600 block mt-2">${formatearMiles(ot.totalFinal)}</span>
+                  )}
+                </div>
               </div>
               
               <div className="flex flex-col gap-2 bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
@@ -232,7 +252,7 @@ export default function Historial() {
         </div>
       )}
 
-      {/* MODAL DE DETALLE DE OT (Se oculta en impresión) */}
+      {/* MODAL DE DETALLE DE OT */}
       {otSeleccionada && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative overflow-hidden">
@@ -242,10 +262,7 @@ export default function Historial() {
               <div className="absolute inset-0 z-50 bg-white/95 backdrop-blur-sm flex items-center justify-center p-6">
                 <div className="bg-white rounded-xl shadow-2xl border border-slate-200 p-6 w-full max-w-sm animate-in zoom-in-95">
                   <div className="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
-                    <h4 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                      Compartir Reporte
-                    </h4>
+                    <h4 className="text-lg font-bold text-slate-800">Compartir Reporte</h4>
                     <button onClick={() => setShareModal({ ...shareModal, isOpen: false })} className="text-slate-400 hover:text-slate-600"><X size={20}/></button>
                   </div>
                   
@@ -262,19 +279,17 @@ export default function Historial() {
                       autoFocus
                     />
                     <p className="text-[11px] text-slate-500 mt-3 bg-slate-50 p-2.5 rounded border border-slate-200 leading-tight">
-                      <strong className="text-slate-700">Importante:</strong> Se enviará un resumen detallado por texto. Para enviar el documento PDF original con fotos, descargalo primero con el botón "Exportar PDF" y adjuntalo en el chat.
+                      <strong className="text-slate-700">Importante:</strong> Se enviará un resumen detallado que ahora incluye la facturación. Para enviar el PDF original, descargalo y adjuntalo.
                     </p>
                   </div>
 
-                  <button onClick={ejecutarCompartir} className="w-full bg-[#25D366] text-white font-bold py-3 rounded-lg hover:bg-[#1da851] transition-colors shadow-sm flex justify-center items-center gap-2">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    Enviar por WhatsApp
+                  <button onClick={ejecutarCompartir} className="w-full bg-slate-800 text-white font-bold py-3 rounded-lg hover:bg-slate-900 transition-colors shadow-sm flex justify-center items-center gap-2">
+                    <Share2 size={18} /> Enviar Ahora
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Cabecera Principal del Modal */}
             <div className="flex justify-between items-center p-6 border-b border-slate-100">
               <div>
                 <h3 className="text-2xl font-bold text-slate-800">Detalle de {otSeleccionada.id_ot}</h3>
@@ -314,7 +329,6 @@ export default function Historial() {
                 </div>
               </div>
 
-              {/* ESTADO VISUAL (FOTOS) */}
               {otSeleccionada.fotos && Object.keys(otSeleccionada.fotos).length > 0 && (
                 <div className="bg-slate-50/50 p-5 rounded-xl border border-slate-100">
                   <h4 className="font-semibold text-slate-700 mb-3 text-sm uppercase tracking-wider flex items-center gap-2">
@@ -323,23 +337,10 @@ export default function Historial() {
                   </h4>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                     {Object.entries(otSeleccionada.fotos).map(([zona, url]) => (
-                      <a 
-                        key={zona} 
-                        href={url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="group relative rounded-lg overflow-hidden border border-slate-200 h-24 bg-white block hover:ring-2 hover:ring-blue-500 transition-all shadow-sm"
-                        title="Haz clic para ampliar"
-                      >
-                        <img 
-                          src={url} 
-                          alt={zona} 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
-                        />
+                      <a key={zona} href={url} target="_blank" rel="noopener noreferrer" className="group relative rounded-lg overflow-hidden border border-slate-200 h-24 bg-white block hover:ring-2 hover:ring-blue-500 transition-all shadow-sm" title="Haz clic para ampliar">
+                        <img src={url} alt={zona} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/90 to-transparent pt-6 pb-1.5 px-1">
-                          <p className="text-white text-[10px] font-bold uppercase tracking-wider text-center truncate shadow-sm">
-                             {ZONAS_FOTOS_LABELS[zona] || zona}
-                          </p>
+                          <p className="text-white text-[10px] font-bold uppercase tracking-wider text-center truncate shadow-sm">{ZONAS_FOTOS_LABELS[zona] || zona}</p>
                         </div>
                       </a>
                     ))}
@@ -356,7 +357,6 @@ export default function Historial() {
                 </ul>
               </div>
 
-              {/* REPUESTOS UTILIZADOS EN EL HISTORIAL */}
               {otSeleccionada.repuestosUtilizados && otSeleccionada.repuestosUtilizados.length > 0 && (
                 <div>
                   <h4 className="font-bold text-slate-700 mb-3 flex items-center gap-2">
@@ -364,11 +364,17 @@ export default function Historial() {
                   </h4>
                   <ul className="space-y-2">
                     {otSeleccionada.repuestosUtilizados.map((rep, idx) => (
-                      <li key={idx} className="flex items-center gap-3 text-slate-600 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                        <span className="bg-blue-100 text-blue-700 font-bold px-2.5 py-1 rounded text-xs flex-shrink-0">
-                          {rep.cantidad}x
-                        </span>
-                        <span className="font-medium text-slate-700">{rep.nombre}</span>
+                      <li key={idx} className="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                        <div className="flex items-center gap-3 text-slate-600 text-sm">
+                          <span className="bg-blue-100 text-blue-700 font-bold px-2.5 py-1 rounded text-xs flex-shrink-0">
+                            {rep.cantidad}x
+                          </span>
+                          <span className="font-medium text-slate-700">{rep.nombre}</span>
+                        </div>
+                        {/* Mostrar subtotal por repuesto si existe */}
+                        {rep.subtotal !== undefined && (
+                          <span className="text-sm font-bold text-slate-500">${formatearMiles(rep.subtotal)}</span>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -385,6 +391,35 @@ export default function Historial() {
                     <h4 className="font-bold text-amber-900 mb-2 flex items-center gap-2"><AlertTriangle size={18} className="text-amber-500" /> Diagnóstico a Futuro</h4>
                     <p className="text-slate-700 text-sm whitespace-pre-wrap">{otSeleccionada.diagnostico || 'No hay diagnóstico registrado.'}</p>
                   </div>
+
+                  {/* NUEVO: RESUMEN DE FACTURACIÓN (Si la OT tiene costos) */}
+                  {otSeleccionada.totalFinal !== undefined && (
+                    <div className="bg-slate-800 p-5 rounded-xl text-white shadow-md mt-6">
+                      <h4 className="flex items-center gap-2 font-bold text-slate-200 mb-4 border-b border-slate-700 pb-3">
+                        <Calculator className="text-blue-400" size={18} /> Resumen de Facturación
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm text-slate-400">
+                          <span>Costo Repuestos:</span>
+                          <span className="font-medium text-slate-200">${formatearMiles(otSeleccionada.costoRepuestos || 0)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm text-slate-400">
+                          <span>Costo Mano de Obra:</span>
+                          <span className="font-medium text-slate-200">${formatearMiles(otSeleccionada.costoManoObra || 0)}</span>
+                        </div>
+                        {otSeleccionada.descuento > 0 && (
+                          <div className="flex justify-between text-sm text-emerald-400">
+                            <span>Descuento ({otSeleccionada.descuento}%):</span>
+                            <span className="font-medium">-${formatearMiles(((otSeleccionada.costoRepuestos || 0) + (otSeleccionada.costoManoObra || 0)) * otSeleccionada.descuento / 100)}</span>
+                          </div>
+                        )}
+                        <div className="pt-3 mt-3 border-t border-slate-700 flex justify-between items-center">
+                          <span className="text-lg font-bold text-white">TOTAL :</span>
+                          <span className="text-2xl font-black text-blue-400">${formatearMiles(otSeleccionada.totalFinal)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -393,11 +428,10 @@ export default function Historial() {
       )}
 
       {/* ========================================================= */}
-      {/* VISTA DE IMPRESIÓN (Solo visible al generar el PDF)       */}
+      {/* VISTA DE IMPRESIÓN PDF                                    */}
       {/* ========================================================= */}
       {otSeleccionada && (
         <div id="zona-impresion" className="hidden print:flex flex-col bg-white w-full text-slate-800 p-8">
-          {/* Cabecera del Reporte */}
           <div className="flex justify-between items-center border-b-2 border-slate-800 pb-4 mb-6">
             <div className="flex items-center gap-4">
               <img src={logoImg} alt="Logo" className="w-16 h-16 object-contain" />
@@ -414,7 +448,6 @@ export default function Historial() {
             </div>
           </div>
 
-          {/* Datos del Vehículo y Fechas */}
           <div className="bg-slate-50 rounded-lg p-4 mb-6 border border-slate-200 grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Vehículo / Cliente:</p>
@@ -437,7 +470,6 @@ export default function Historial() {
             </div>
           </div>
 
-          {/* Galería de Fotos */}
           {otSeleccionada.fotos && Object.keys(otSeleccionada.fotos).length > 0 && (
             <div className="mb-6">
               <h4 className="font-bold text-slate-700 mb-2 border-b border-slate-200 pb-1 text-sm uppercase">Evidencia Visual al Ingreso</h4>
@@ -455,7 +487,6 @@ export default function Historial() {
           )}
 
           <div className="grid grid-cols-2 gap-6 mb-6">
-            {/* Trabajos Realizados */}
             <div>
               <h4 className="font-bold text-slate-700 mb-2 border-b border-slate-200 pb-1 text-sm uppercase">Trabajos Realizados</h4>
               <ul className="space-y-1">
@@ -468,14 +499,14 @@ export default function Historial() {
               </ul>
             </div>
 
-            {/* Repuestos */}
             <div>
               <h4 className="font-bold text-slate-700 mb-2 border-b border-slate-200 pb-1 text-sm uppercase">Repuestos Utilizados</h4>
               {otSeleccionada.repuestosUtilizados && otSeleccionada.repuestosUtilizados.length > 0 ? (
                 <ul className="space-y-1">
                   {otSeleccionada.repuestosUtilizados.map((rep, idx) => (
-                    <li key={idx} className="flex items-center gap-1.5 text-slate-700 text-xs">
-                      <span className="font-bold text-slate-500">{rep.cantidad}x</span> {rep.nombre}
+                    <li key={idx} className="flex items-center justify-between text-slate-700 text-xs">
+                      <span><span className="font-bold text-slate-500">{rep.cantidad}x</span> {rep.nombre}</span>
+                      {rep.subtotal !== undefined && <span className="font-bold text-slate-500">${formatearMiles(rep.subtotal)}</span>}
                     </li>
                   ))}
                 </ul>
@@ -485,7 +516,6 @@ export default function Historial() {
             </div>
           </div>
 
-          {/* Informes */}
           {otSeleccionada.estado === 'Cerrada' && (
             <div className="space-y-4 flex-1">
               <div>
@@ -503,8 +533,34 @@ export default function Historial() {
                 </div>
               </div>
 
-              {/* BLOQUE DE FIRMAS - REPORTE DE SERVICIO (Solo visible en impresión) */}
-              <div className="mt-16 pt-8 flex justify-around items-end">
+              {/* NUEVO: BLOQUE DE FACTURACIÓN EN EL PDF */}
+              {otSeleccionada.totalFinal !== undefined && (
+                <div className="mt-6 pt-4 border-t border-slate-200 flex justify-end">
+                  <div className="w-64 space-y-1 text-xs">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Subtotal Repuestos:</span>
+                      <span>${formatearMiles(otSeleccionada.costoRepuestos || 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span>Subtotal Mano de Obra:</span>
+                      <span>${formatearMiles(otSeleccionada.costoManoObra || 0)}</span>
+                    </div>
+                    {otSeleccionada.descuento > 0 && (
+                      <div className="flex justify-between text-emerald-600 font-medium">
+                        <span>Descuento ({otSeleccionada.descuento}%):</span>
+                        <span>-${formatearMiles(((otSeleccionada.costoRepuestos || 0) + (otSeleccionada.costoManoObra || 0)) * otSeleccionada.descuento / 100)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-lg font-black text-slate-900 pt-2 mt-2 border-t border-slate-300">
+                      <span>TOTAL :</span>
+                      <span>${formatearMiles(otSeleccionada.totalFinal)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* BLOQUE DE FIRMAS - REPORTE DE SERVICIO */}
+              <div className="mt-12 pt-8 flex justify-around items-start">
                 <div className="text-center w-64">
                   <div className="border-t border-slate-800 mb-2"></div>
                   <p className="text-xs font-bold text-slate-700">Firma del Cliente</p>
@@ -519,14 +575,12 @@ export default function Historial() {
             </div>
           )}
 
-          {/* Pie de Página */}
           <div className="mt-8 pt-4 border-t border-slate-200 text-center text-slate-400 text-[10px]">
-            Documento generado automáticamente por JOTA M. 
+            Documento generado automáticamente por TallerFlow | JOTA M. Mecánica Integral
           </div>
         </div>
       )}
 
-      {/* ESTILOS DE IMPRESIÓN */}
       <style>{`
         @media print {
           @page { 
