@@ -8,78 +8,37 @@ const MARCAS = ['Volkswagen', 'Ford', 'Chevrolet', 'Toyota', 'Fiat', 'Peugeot', 
 const currentYear = new Date().getFullYear();
 const ANIOS = Array.from({ length: currentYear - 1990 + 1 }, (_, i) => currentYear - i);
 
-// v2.0: Categorías expandidas y desglosadas a pedido del cliente
 const CATEGORIAS_TRABAJO = {
   'Diagnóstico y Electrónica': [
-    'Diagnóstico Computarizado (Escaneo)', 
-    'Reseteo de Testigos / ECU', 
-    'Revisión de Batería y Carga', 
-    'Reparación de Arranque',
-    'Reparación de Alternador',
-    'Cambio Rodamiento Polea Alternador',
-    'Cambio de Sensores (ABS, Oxígeno)'
+    'Diagnóstico Computarizado (Escaneo)', 'Reseteo de Testigos / ECU', 'Revisión de Batería y Carga', 
+    'Reparación de Arranque', 'Reparación de Alternador', 'Cambio Rodamiento Polea Alternador', 'Cambio de Sensores (ABS, Oxígeno)'
   ],
   'Climatización y Refrigeración': [
-    'Sistema de Aire Acondicionado (Carga/Fugas)', 
-    'Reparación de Compresor AC', 
-    'Cambio Rodamiento Polea A/C',
-    'Cambio de Radiador',
-    'Cambio de Electroventilador',
-    'Limpieza de Circuito de Agua'
+    'Sistema de Aire Acondicionado (Carga/Fugas)', 'Reparación de Compresor AC', 'Cambio Rodamiento Polea A/C',
+    'Cambio de Radiador', 'Cambio de Electroventilador', 'Limpieza de Circuito de Agua'
   ],
   'Mantenimiento General': [
-    'Cambio de Aceite y Filtros', 
-    'Cambio de Fluidos (Caja, Dirección)', 
-    'Cambio Filtro de Habitáculo', 
-    'Revisión General de 20 Puntos', 
-    'Lubricación General'
+    'Cambio de Aceite y Filtros', 'Cambio de Fluidos (Caja, Dirección)', 'Cambio Filtro de Habitáculo', 
+    'Revisión General de 20 Puntos', 'Lubricación General'
   ],
   'Motor y Transmisión': [
-    'Kit de Distribución (Correa/Cadena)', 
-    'Cambio Correa Alternador / Poly-V',
-    'Cambio Bomba de Agua',
-    'Cambio de Termostato',
-    'Cambio de Manguera (Pérdida de Agua)',
-    'Reparación de Pérdida de Aceite',
-    'Cambio de Bujías',
-    'Cambio de Bobinas',
-    'Servicio de Inyección Electrónica', 
-    'Cambio de Kit de Embrague', 
-    'Junta de Tapa de Cilindros',
-    'Cambio de Patas de Motor',
-    'Cambio de Patas de Caja',
-    'Cambio de Cuna de Motor'
+    'Kit de Distribución (Correa/Cadena)', 'Cambio Correa Alternador / Poly-V', 'Cambio Bomba de Agua',
+    'Cambio de Termostato', 'Cambio de Manguera (Pérdida de Agua)', 'Reparación de Pérdida de Aceite',
+    'Cambio de Bujías', 'Cambio de Bobinas', 'Servicio de Inyección Electrónica', 'Cambio de Kit de Embrague', 
+    'Junta de Tapa de Cilindros', 'Cambio de Patas de Motor', 'Cambio de Patas de Caja', 'Cambio de Cuna de Motor'
   ],
   'Tren Delantero y Dirección': [
-    'Alineación y Balanceo', 
-    'Cambio de Amortiguadores',
-    'Cambio de Espirales',
-    'Cambio de Cazoleta / Crapodina',
-    'Cambio de Bujes',
-    'Cambio de Rótulas',
-    'Cambio de Extremos',
-    'Cambio de Bieletas',
-    'Cambio Rodamiento de Rueda',
-    'Cambio Rodamiento Polea Dirección',
-    'Cremallera de Dirección', 
-    'Semiejes y Homocinéticas'
+    'Alineación y Balanceo', 'Cambio de Amortiguadores', 'Cambio de Espirales', 'Cambio de Cazoleta / Crapodina',
+    'Cambio de Bujes', 'Cambio de Rótulas', 'Cambio de Extremos', 'Cambio de Bieletas',
+    'Cambio Rodamiento de Rueda', 'Cambio Rodamiento Polea Dirección', 'Cremallera de Dirección', 'Semiejes y Homocinéticas'
   ],
   'Frenos': [
-    'Cambio de Pastillas',
-    'Cambio de Discos',
-    'Rectificado de Discos', 
-    'Cambio de Cintas',
-    'Rectificado/Cambio de Campanas',
-    'Cambio de Cables de Freno',
-    'Regulación de Frenos',
-    'Purga y Líquido de Frenos', 
-    'Reparación de Calipers'
+    'Cambio de Pastillas', 'Cambio de Discos', 'Rectificado de Discos', 'Cambio de Cintas',
+    'Rectificado/Cambio de Campanas', 'Cambio de Cables de Freno', 'Regulación de Frenos',
+    'Purga y Líquido de Frenos', 'Reparación de Calipers'
   ],
   'Otros Trabajos': [
-    'Rotación de Neumáticos', 
-    'Reparación de Escape', 
-    'Cambio de Ópticas / Lámparas', 
-    'Trabajo de Tornería / Soldadura'
+    'Rotación de Neumáticos', 'Reparación de Escape', 'Cambio de Ópticas / Lámparas', 'Trabajo de Tornería / Soldadura'
   ]
 };
 
@@ -148,7 +107,7 @@ export default function CheckIn() {
       const fechaIngreso = `${year}-${month}-${day}`; 
       const horaIngreso = ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 
-      setEstadoCarga('Subiendo imágenes al servidor...');
+      setEstadoCarga('Subiendo imágenes...');
       const urlsFotos = {};
       
       for (const zona of ZONAS_FOTOS) {
@@ -160,7 +119,7 @@ export default function CheckIn() {
         }
       }
 
-      setEstadoCarga('Guardando datos finales...');
+      setEstadoCarga('Guardando datos...');
       const nuevaOrden = {
         id_ot: idFormat,
         numero: nuevoNumero,
@@ -196,37 +155,40 @@ export default function CheckIn() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto pb-10 px-4 sm:px-6 lg:px-8">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="max-w-7xl mx-auto pb-24 lg:pb-10"> {/* pb-24 en móvil por el botón flotante */}
+      
+      {/* ENCABEZADO */}
+      <div className="mb-6 lg:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
-            <CalendarPlus className="text-blue-600" size={32} /> Nuevo Ingreso
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 flex items-center gap-2 sm:gap-3">
+            <CalendarPlus className="text-blue-600 w-7 h-7 sm:w-8 sm:h-8" /> Nuevo Ingreso
           </h2>
-          <p className="mt-2 text-slate-500">Completá los datos y adjuntá el estado visual para generar la OT.</p>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-slate-500">Completá los datos y adjuntá fotos para la OT.</p>
         </div>
-        <div className="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-slate-600 font-medium">
+        <div className="bg-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-slate-200 shadow-sm text-slate-600 font-medium text-sm self-start sm:self-auto">
           {new Date().toLocaleDateString('es-AR')}
         </div>
       </div>
 
-      {/* Cambiamos la grilla a 12 columnas para controlar mejor las proporciones */}
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
         
-        {/* COLUMNA IZQUIERDA: Vehículo y Fotos (Ocupa 4 de 12 columnas en pantallas grandes) */}
+        {/* COLUMNA IZQUIERDA: Vehículo y Fotos */}
         <div className="lg:col-span-4 space-y-6">
           
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          {/* DATOS DEL VEHÍCULO */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6">
             <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
-              <CarFront className="text-blue-500" /> Datos del Vehículo
+              <CarFront className="text-blue-500 w-5 h-5" /> Vehículo
             </h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Patente</label>
-                <input type="text" name="patente" value={formData.patente} onChange={handleInputChange} className="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-blue-600 outline-none uppercase" required />
+                {/* text-base en inputs evita auto-zoom en iOS */}
+                <input type="text" name="patente" value={formData.patente} onChange={handleInputChange} className="w-full rounded-lg border border-slate-300 px-4 py-2.5 sm:py-2 focus:ring-2 focus:ring-blue-600 outline-none uppercase text-base sm:text-sm" required placeholder="AB123CD" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Marca</label>
-                <select name="marca" value={formData.marca} onChange={handleInputChange} className="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-blue-600 outline-none bg-white" required>
+                <select name="marca" value={formData.marca} onChange={handleInputChange} className="w-full rounded-lg border border-slate-300 px-4 py-2.5 sm:py-2 focus:ring-2 focus:ring-blue-600 outline-none bg-white text-base sm:text-sm" required>
                   <option value="">Seleccione marca</option>
                   {MARCAS.map(marca => <option key={marca} value={marca}>{marca}</option>)}
                 </select>
@@ -234,11 +196,11 @@ export default function CheckIn() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Modelo</label>
-                  <input type="text" name="modelo" value={formData.modelo} onChange={handleInputChange} className="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-blue-600 outline-none" required />
+                  <input type="text" name="modelo" value={formData.modelo} onChange={handleInputChange} className="w-full rounded-lg border border-slate-300 px-4 py-2.5 sm:py-2 focus:ring-2 focus:ring-blue-600 outline-none text-base sm:text-sm" required placeholder="Ej: Gol" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Año</label>
-                  <select name="anio" value={formData.anio} onChange={handleInputChange} className="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-blue-600 outline-none bg-white" required>
+                  <select name="anio" value={formData.anio} onChange={handleInputChange} className="w-full rounded-lg border border-slate-300 px-4 py-2.5 sm:py-2 focus:ring-2 focus:ring-blue-600 outline-none bg-white text-base sm:text-sm" required>
                     <option value="">Año</option>
                     {ANIOS.map(anio => <option key={anio} value={anio}>{anio}</option>)}
                   </select>
@@ -247,35 +209,38 @@ export default function CheckIn() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          {/* FOTOS */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6">
             <h3 className="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2 border-b pb-3">
-              <Camera className="text-blue-500" /> Estado Visual (Fotos)
+              <Camera className="text-blue-500 w-5 h-5" /> Estado Visual (Fotos)
             </h3>
             <p className="text-xs text-slate-500 mb-4">Recomendado para evitar reclamos.</p>
             
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
               {ZONAS_FOTOS.map((zona, index) => (
                 <div key={zona.id} className={`${index === 0 ? 'col-span-2' : 'col-span-1'}`}>
-                  <label className="block text-xs font-bold text-slate-600 mb-1">{zona.label}</label>
+                  <label className="block text-[11px] sm:text-xs font-bold text-slate-600 mb-1 truncate">{zona.label}</label>
                   
                   {fotosPreviews[zona.id] ? (
-                    <div className="relative group rounded-lg overflow-hidden border border-slate-200 h-24 bg-slate-100">
+                    <div className="relative group rounded-lg overflow-hidden border border-slate-200 h-20 sm:h-24 bg-slate-100">
                       <img src={fotosPreviews[zona.id]} alt={zona.label} className="w-full h-full object-cover" />
                       <button 
                         type="button" 
                         onClick={() => eliminarFoto(zona.id)} 
-                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1 right-1 bg-red-500 text-white p-1.5 rounded-full lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shadow-md"
                       >
                         <X size={14} />
                       </button>
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 hover:border-blue-400 transition-colors">
-                      <ImagePlus className="text-slate-400 mb-1" size={20} />
-                      <span className="text-xs text-slate-500 font-medium">Adjuntar</span>
+                    <label className="flex flex-col items-center justify-center h-20 sm:h-24 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 hover:border-blue-400 transition-colors">
+                      <ImagePlus className="text-slate-400 mb-1 w-5 h-5 sm:w-6 sm:h-6" />
+                      <span className="text-[10px] sm:text-xs text-slate-500 font-medium">Adjuntar</span>
                       <input 
                         type="file" 
                         accept="image/*" 
+                        // En móvil, agregamos capture="environment" para abrir la cámara directo en algunos navegadores
+                        capture="environment" 
                         className="hidden" 
                         onChange={(e) => handleFotoChange(e, zona.id)} 
                       />
@@ -288,28 +253,27 @@ export default function CheckIn() {
 
         </div>
 
-        {/* COLUMNA DERECHA: Checklist y Botón de Envío (Ocupa 8 de 12 columnas en pantallas grandes) */}
+        {/* COLUMNA DERECHA: Checklist y Envío */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6">
             <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3">
-              <Wrench className="text-blue-500" /> Trabajo a Realizar (Checklist)
+              <Wrench className="text-blue-500 w-5 h-5" /> Trabajo a Realizar
             </h3>
             
-            {/* Ahora el Checklist usa 3 columnas en pantallas medianas/grandes */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
               {Object.entries(CATEGORIAS_TRABAJO).map(([categoria, servicios]) => (
-                <div key={categoria} className="bg-slate-50 rounded-lg p-4 border border-slate-100 h-fit">
-                  <h4 className="font-semibold text-slate-700 mb-3 leading-tight">{categoria}</h4>
-                  <div className="space-y-2">
+                <div key={categoria} className="bg-slate-50 rounded-lg p-3 sm:p-4 border border-slate-100 h-fit">
+                  <h4 className="font-semibold text-slate-700 mb-2 sm:mb-3 leading-tight text-sm sm:text-base">{categoria}</h4>
+                  <div className="space-y-1.5 sm:space-y-2">
                     {servicios.map(servicio => {
                       const isSelected = serviciosSeleccionados.includes(servicio);
                       return (
-                        <label key={servicio} className={`flex items-start gap-3 p-2 rounded-md cursor-pointer transition-all duration-200 ${isSelected ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'hover:bg-slate-100 border-transparent'} border`}>
+                        <label key={servicio} className={`flex items-start gap-2.5 sm:gap-3 p-2 sm:p-2.5 rounded-md cursor-pointer transition-all duration-200 ${isSelected ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'hover:bg-slate-100 border-transparent'} border`}>
                           <input type="checkbox" className="hidden" checked={isSelected} onChange={() => toggleServicio(servicio)} />
-                          <div className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 bg-white'}`}>
-                            {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
+                          <div className={`flex-shrink-0 mt-0.5 w-4 h-4 sm:w-5 sm:h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 bg-white'}`}>
+                            {isSelected && <Check className="w-3 h-3 sm:w-4 sm:h-4 text-white" strokeWidth={3} />}
                           </div>
-                          <span className={`text-xs md:text-sm select-none leading-snug ${isSelected ? 'text-emerald-900 font-semibold' : 'text-slate-600'}`}>{servicio}</span>
+                          <span className={`text-[13px] sm:text-sm select-none leading-tight ${isSelected ? 'text-emerald-900 font-semibold' : 'text-slate-600'}`}>{servicio}</span>
                         </label>
                       );
                     })}
@@ -319,16 +283,22 @@ export default function CheckIn() {
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <button type="submit" disabled={serviciosSeleccionados.length === 0 || isSubmitting} className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold py-3 px-8 rounded-lg shadow-sm flex items-center gap-2 transition-all text-lg">
+          {/* BOTÓN FLOTANTE EN MÓVIL / NORMAL EN DESKTOP */}
+          <div className="fixed bottom-0 left-0 w-full p-4 bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] lg:relative lg:p-0 lg:bg-transparent lg:border-none lg:shadow-none lg:backdrop-blur-none z-30 flex justify-end">
+            <button 
+              type="submit" 
+              disabled={serviciosSeleccionados.length === 0 || isSubmitting} 
+              className="w-full lg:w-auto bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:text-slate-500 text-white font-semibold py-3.5 sm:py-3 px-6 sm:px-8 rounded-xl lg:rounded-lg shadow-md lg:shadow-sm flex items-center justify-center gap-2 transition-all text-base sm:text-lg"
+            >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="animate-spin" size={20} /> 
-                  {estadoCarga}
+                  <Loader2 className="animate-spin w-5 h-5" /> 
+                  <span className="truncate max-w-[200px]">{estadoCarga}</span>
                 </>
               ) : 'Generar Orden de Trabajo'}
             </button>
           </div>
+
         </div>
       </form>
     </div>

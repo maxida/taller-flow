@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calculator, Printer, MessageCircle, Mail, Plus, Trash2, Car, User, CheckCircle, Wrench } from 'lucide-react';
+import { Calculator, Printer, MessageCircle, Plus, Trash2, Car, User, CheckCircle, Wrench, Percent } from 'lucide-react';
 import logoImg from '../assets/logo.png';
 
 export default function Presupuesto() {
@@ -84,96 +84,115 @@ export default function Presupuesto() {
     window.open(url, '_blank');
   };
 
-  const handleEmail = () => {
-    const texto = `Hola ${cliente.nombre},\n\nAdjunto el presupuesto para los trabajos en tu ${cliente.vehiculo}.\n\nTotal estimado: $${total.toLocaleString('es-AR')}\n\nSaludos,\n JOTA M..`;
-    window.location.href = `mailto:?subject=Presupuesto JOTA M. - ${cliente.vehiculo}&body=${encodeURIComponent(texto)}`;
-  };
-
   return (
-    <div className="max-w-7xl mx-auto pb-10">
+    <div className="max-w-7xl mx-auto pb-10 px-1 sm:px-0">
+      
+      {/* HEADER RESPONSIVO */}
       <div className="mb-6 print:hidden">
-        <h2 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
-          <Calculator className="text-blue-600" size={32} />
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 flex items-center gap-2 sm:gap-3">
+          <Calculator className="text-blue-600 w-7 h-7 sm:w-8 sm:h-8" />
           Generador de Presupuestos
         </h2>
-        <p className="mt-2 text-slate-500">Armá la cotización, imprimí el PDF o envialo directo al cliente.</p>
+        <p className="mt-1 sm:mt-2 text-sm sm:text-base text-slate-500">Armá la cotización, imprimí el PDF o envialo directo al cliente.</p>
       </div>
 
-      <div className="flex flex-col xl:flex-row gap-8 print:block print:w-full">
+      <div className="flex flex-col xl:flex-row gap-6 lg:gap-8 print:block print:w-full">
         
-        <div className="xl:w-5/12 space-y-6 print:hidden">
+        {/* COLUMNA EDITOR (Toma el 100% de la pantalla en móvil y el 41% en computadoras grandes) */}
+        <div className="w-full xl:w-5/12 space-y-6 print:hidden">
           
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2"><User size={18} className="text-blue-500"/> Datos del Cliente</h3>
-            <div className="space-y-3">
+          {/* DATOS DEL CLIENTE */}
+          <div className="bg-white p-5 sm:p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3 text-sm sm:text-base">
+              <User size={18} className="text-blue-500"/> Datos del Cliente
+            </h3>
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Nombre / Razón Social</label>
-                <input type="text" name="nombre" value={cliente.nombre} onChange={handleClienteChange} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Ej: Juan Pérez" />
+                <label className="block text-xs font-bold text-slate-600 mb-1">Nombre / Razón Social</label>
+                <input type="text" name="nombre" value={cliente.nombre} onChange={handleClienteChange} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Ej: Juan Pérez" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Teléfono (WhatsApp)</label>
-                <input type="text" name="telefono" value={cliente.telefono} onChange={handleClienteChange} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Ej: 381 1234567" />
+                <label className="block text-xs font-bold text-slate-600 mb-1">Teléfono (WhatsApp)</label>
+                <input type="text" name="telefono" value={cliente.telefono} onChange={handleClienteChange} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Ej: 381 1234567" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Vehículo</label>
-                  <input type="text" name="vehiculo" value={cliente.vehiculo} onChange={handleClienteChange} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Ej: VW Gol Trend" />
+                  <label className="block text-xs font-bold text-slate-600 mb-1">Vehículo</label>
+                  <input type="text" name="vehiculo" value={cliente.vehiculo} onChange={handleClienteChange} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Ej: VW Gol Trend" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Patente</label>
-                  <input type="text" name="patente" value={cliente.patente} onChange={handleClienteChange} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none uppercase" placeholder="Ej: AB123CD" />
+                  <label className="block text-xs font-bold text-slate-600 mb-1">Patente</label>
+                  <input type="text" name="patente" value={cliente.patente} onChange={handleClienteChange} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 sm:py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-600 outline-none uppercase" placeholder="Ej: AB123CD" />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2"><Wrench size={18} className="text-blue-500"/> Detalle del Trabajo</h3>
+          {/* EDITAR ÍTEMS */}
+          <div className="bg-white p-5 sm:p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-3 text-sm sm:text-base">
+              <Wrench size={18} className="text-blue-500"/> Detalle del Trabajo
+            </h3>
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={item.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200 relative group">
-                  <button onClick={() => eliminarItem(item.id)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-200 shadow-sm"><Trash2 size={14}/></button>
+                <div key={item.id} className="p-4 bg-slate-50/70 rounded-lg border border-slate-200 relative group">
+                  {/* Botón eliminar adaptado tácticamente a móviles (visible siempre en móvil, hover en PC) */}
+                  <button 
+                    onClick={() => eliminarItem(item.id)} 
+                    className="absolute -top-2 -right-2 bg-red-100 text-red-600 p-2 sm:p-1.5 rounded-full lg:opacity-0 lg:group-hover:opacity-100 transition-opacity hover:bg-red-200 shadow-md border border-red-200"
+                    type="button"
+                  >
+                    <Trash2 size={14}/>
+                  </button>
+                  
                   <div className="grid grid-cols-12 gap-3">
                     <div className="col-span-12">
-                      <input type="text" value={item.descripcion} onChange={(e) => actualizarItem(item.id, 'descripcion', e.target.value)} className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Descripción del trabajo o repuesto" />
+                      <input type="text" value={item.descripcion} onChange={(e) => actualizarItem(item.id, 'descripcion', e.target.value)} className="w-full rounded-md border border-slate-300 px-3 py-2.5 sm:py-1.5 text-base sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white" placeholder="Descripción del trabajo o repuesto" />
                     </div>
-                    <div className="col-span-12 md:col-span-6">
-                      <select value={item.tipo} onChange={(e) => actualizarItem(item.id, 'tipo', e.target.value)} className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <div className="col-span-12 sm:col-span-6">
+                      <select value={item.tipo} onChange={(e) => actualizarItem(item.id, 'tipo', e.target.value)} className="w-full rounded-md border border-slate-300 px-3 py-2.5 sm:py-1.5 text-base sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white appearance-none">
                         <option value="Mano de Obra">Mano de Obra</option>
-                        <option value="Repuesto (Taller)">Repuesto (Pone el Taller)</option>
-                        <option value="Repuesto (Trae Cliente)">Repuesto (Trae el Cliente)</option>
+                        <option value="Repuesto (Taller)">Repuesto (Taller)</option>
+                        <option value="Repuesto (Trae Cliente)">Repuesto (Trae Cliente)</option>
                       </select>
                     </div>
-                    <div className="col-span-6 md:col-span-2">
-                      <input type="number" min="1" value={item.cantidad} onChange={(e) => actualizarItem(item.id, 'cantidad', e.target.value)} className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-center" placeholder="Cant." />
+                    <div className="col-span-5 sm:col-span-2">
+                      <input type="number" min="1" value={item.amount || item.cantidad} onChange={(e) => actualizarItem(item.id, 'cantidad', e.target.value)} className="w-full rounded-md border border-slate-300 px-3 py-2.5 sm:py-1.5 text-base sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none text-center bg-white" placeholder="Cant" />
                     </div>
-                    <div className="col-span-6 md:col-span-4">
-                      <input type="text" disabled={item.tipo === 'Repuesto (Trae Cliente)'} value={item.tipo === 'Repuesto (Trae Cliente)' ? '0' : formatearMiles(item.precioUnitario)} onChange={(e) => actualizarItem(item.id, 'precioUnitario', parsearMiles(e.target.value))} className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-right disabled:bg-slate-100 disabled:text-slate-400" placeholder="$ P. Unitario" />
+                    <div className="col-span-7 sm:col-span-4">
+                      <div className="relative">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+                        <input type="text" name="precioUnitario" disabled={item.tipo === 'Repuesto (Trae Cliente)'} value={item.tipo === 'Repuesto (Trae Cliente)' ? '0' : (item.precioUnitario === 0 ? '' : formatearMiles(item.precioUnitario))} onChange={(e) => actualizarItem(item.id, 'precioUnitario', parsearMiles(e.target.value))} className="w-full rounded-md border border-slate-300 pl-6 pr-2 py-2.5 sm:py-1.5 text-base sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none text-right disabled:bg-slate-100 disabled:text-slate-400 font-medium" placeholder="Precio" />
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
-              <button onClick={agregarItem} className="w-full py-2.5 border-2 border-dashed border-slate-300 text-slate-500 rounded-lg hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 font-medium text-sm">
-                <Plus size={16} /> Agregar Ítem
+              
+              <button onClick={agregarItem} type="button" className="w-full py-3 border-2 border-dashed border-slate-300 text-slate-500 rounded-lg hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 font-bold text-sm bg-white shadow-sm">
+                <Plus size={16} /> Agregar línea de trabajo
               </button>
             </div>
-            <div className="mt-6 pt-4 border-t border-slate-200 flex justify-end items-center gap-3">
-              <label className="text-sm font-medium text-slate-600">Descuento Global (%)</label>
-              <input type="number" min="0" max="100" value={descuento} onChange={(e) => setDescuento(e.target.value)} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none text-center" />
+            
+            <div className="mt-5 pt-4 border-t border-slate-200 flex justify-between items-center gap-4">
+              <label className="text-xs sm:text-sm font-bold text-slate-600 flex items-center gap-1"><Percent size={16} className="text-blue-500"/> Descuento Global (%)</label>
+              <input type="number" min="0" max="100" value={descuento === 0 ? '' : descuento} onChange={(e) => setDescuento(Number(e.target.value))} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-base sm:text-sm focus:ring-2 focus:ring-blue-600 outline-none text-center font-bold" placeholder="0" />
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <button onClick={handlePrint} className="col-span-3 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all">
-              <Printer size={18} /> Exportar PDF / Imprimir
+          {/* BOTONES DE EXPORTACIÓN */}
+          <div className="flex flex-col gap-3">
+            <button onClick={handleWhatsApp} className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all text-base">
+              <MessageCircle size={18} /> Enviar Presupuesto por WhatsApp
             </button>
-            <button onClick={handleWhatsApp} className="col-span-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold py-3 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all">
-              <MessageCircle size={18} /> Enviar WhatsApp
+            <button onClick={handlePrint} className="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all text-sm">
+              <Printer size={18} /> Descargar PDF / Imprimir Documento
             </button>
           </div>
         </div>
 
-        <div className="xl:w-7/12 w-full print:w-full print:m-0 print:p-0">
+        {/* COLUMNA VISTA PREVIA PDF (Oculta por defecto en móvil, visible desde pantallas XL) */}
+        <div className="hidden xl:w-7/12 w-full print:block print:w-full print:m-0 print:p-0">
           <div id="zona-impresion" className="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200 text-slate-800 flex flex-col print:shadow-none print:border-none print:w-full print:max-w-none print:p-8">
             
             <div className="flex justify-between items-center border-b-2 border-slate-800 pb-4 mb-6">
@@ -264,7 +283,6 @@ export default function Presupuesto() {
               </div>
             </div>
 
-            {/* BLOQUE DE FIRMAS - PRESUPUESTO */}
             <div className="hidden print:flex mt-16 pt-8 justify-around items-start">
               <div className="text-center w-64">
                 <div className="border-t border-slate-800 mb-2"></div>
@@ -303,15 +321,12 @@ export default function Presupuesto() {
             -webkit-print-color-adjust: exact !important; 
             print-color-adjust: exact !important; 
           }
-          
           body * {
             visibility: hidden;
           }
-          
           #zona-impresion, #zona-impresion * {
             visibility: visible;
           }
-          
           #zona-impresion {
             position: absolute;
             left: 0;
